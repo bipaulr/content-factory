@@ -85,7 +85,7 @@ class CampaignTracker:
         self.log_feedback(
             agent="researcher",
             event="phase_complete",
-            message="✓ Researcher extracted and validated facts from source material"
+            message="Researcher extracted and validated facts from source material"
         )
     
     def log_researcher_start(self):
@@ -163,45 +163,33 @@ class CampaignTracker:
         if not campaign_file.exists():
             return None
         
-        try:
-            with open(campaign_file, "r") as f:
-                content = f.read().strip()
-                if not content:
-                    print(f"Warning: Campaign file {campaign_id}.json is empty")
-                    return None
-                data = json.loads(content)
-        except json.JSONDecodeError as e:
-            print(f"Error decoding campaign {campaign_id}.json: {e}")
-            return None
-        except Exception as e:
-            print(f"Error loading campaign {campaign_id}: {e}")
-            return None
+        with open(campaign_file, "r") as f:
+            data = json.load(f)
         
         # Reconstruct tracker object
         tracker = CampaignTracker.__new__(CampaignTracker)
         tracker.campaign_id = campaign_id
-        tracker.source_text = data.get("source_text", "")
+        tracker.source_text = data["source_text"]
         tracker.campaigns_dir = Path("campaigns")
         tracker.campaign_data = data
         return tracker
     
     @staticmethod
-    def list_all(limit: int = 20) -> list:
+    def list_all(limit: int = None) -> list:
         """List all campaigns, newest first"""
         campaigns_dir = Path("campaigns")
         if not campaigns_dir.exists():
             return []
         
         campaigns = []
-        for campaign_file in sorted(campaigns_dir.glob("*.json"), reverse=True)[:limit]:
+        campaign_files = sorted(campaigns_dir.glob("*.json"), reverse=True)
+        if limit:
+            campaign_files = campaign_files[:limit]
+            
+        for campaign_file in campaign_files:
             with open(campaign_file, "r") as f:
                 data = json.load(f)
-                campaigns.append({
-                    "id": data["id"],
-                    "created_at": data["created_at"],
-                    "status": data["status"],
-                    "product_name": data.get("fact_sheet", {}).get("product_name", "Unknown Product"),
-                })
+                campaigns.append(data)
         
         return campaigns
 

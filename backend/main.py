@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
@@ -48,7 +48,10 @@ class UrlInput(BaseModel):
 @app.post("/api/research-url")
 def research_url(input: UrlInput):
     try:
-        response = requests.get(input.url, timeout=10)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(input.url, timeout=10, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
         
         for tag in soup(["script", "style"]):
@@ -226,16 +229,21 @@ async def run_pipeline_async_file(background_tasks: BackgroundTasks, file: Uploa
             "message": "Campaign processing started. Use /api/pipeline/stream/{campaign_id} to monitor progress.",
             "stream_url": f"/api/pipeline/stream/{campaign_id}"
         }
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File must be valid UTF-8 text")
     except Exception as e:
-        return {"error": str(e)}, 400
+        raise HTTPException(status_code=400, detail=f"Failed to process file: {str(e)}")
 
 
 @app.post("/api/run-pipeline-async-url")
 def run_pipeline_async_url(input: UrlInput, background_tasks: BackgroundTasks):
     """Run pipeline asynchronously with URL content"""
     try:
-        # Fetch and parse URL
-        response = requests.get(input.url, timeout=10)
+        # Fetch and parse URL with browser user agent to avoid 403 errors
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(input.url, timeout=10, verify=False, headers=headers)  # Disable SSL verification for dev
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -253,7 +261,7 @@ def run_pipeline_async_url(input: UrlInput, background_tasks: BackgroundTasks):
         text = ' '.join(chunk for chunk in chunks if chunk)
         
         if not text or len(text) < 20:
-            return {"error": "Could not extract meaningful content from URL"}, 400
+            raise HTTPException(status_code=400, detail="Could not extract meaningful content from URL. Please check the URL.")
         
         # Generate unique campaign ID
         campaign_id = generate_campaign_id()
@@ -271,15 +279,38 @@ def run_pipeline_async_url(input: UrlInput, background_tasks: BackgroundTasks):
             "message": "Campaign processing started. Use /api/pipeline/stream/{campaign_id} to monitor progress.",
             "stream_url": f"/api/pipeline/stream/{campaign_id}"
         }
+    except HTTPException:
+        raise
+    except requests.exceptions.MissingSchema:
+        raise HTTPException(status_code=400, detail="Invalid URL format. Please include http:// or https://")
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(status_code=400, detail="Could not connect to URL. Please check if it's accessible.")
     except Exception as e:
-        return {"error": str(e)}, 400
+        raise HTTPException(status_code=400, detail=f"Failed to fetch URL: {str(e)}")
 
 
 @app.get("/api/campaigns")
 def get_campaigns():
     """Get list of all campaigns"""
-    campaigns = CampaignTracker.list_all()
-    return campaigns
+    campaigns_data = CampaignTracker.list_all()
+    
+    # Enrich campaign data with campaign_id and duration
+    for campaign in campaigns_data:
+        # Ensure campaign_id is set to id for frontend compatibility
+        if "campaign_id" not in campaign:
+            campaign["campaign_id"] = campaign.get("id")
+        
+        # Calculate duration if completed
+        if campaign.get("completed_at") and campaign.get("created_at"):
+            try:
+                from datetime import datetime
+                created = datetime.fromisoformat(campaign["created_at"])
+                completed = datetime.fromisoformat(campaign["completed_at"])
+                campaign["duration"] = int((completed - created).total_seconds())
+            except:
+                campaign["duration"] = None
+    
+    return campaigns_data
 
 
 @app.get("/api/campaigns/{campaign_id}")
@@ -290,7 +321,47 @@ def get_campaign(campaign_id: str):
     if not tracker:
         return {"error": "Campaign not found"}, 404
     
-    return tracker.campaign_data
+    campaign = tracker.campaign_data.copy()
+    
+    # Ensure campaign_id is set for frontend compatibility
+    if "campaign_id" not in campaign:
+        campaign["campaign_id"] = campaign.get("id")
+    
+    # Calculate duration if completed
+    if campaign.get("completed_at") and campaign.get("created_at"):
+        try:
+            from datetime import datetime
+            created = datetime.fromisoformat(campaign["created_at"])
+            completed = datetime.fromisoformat(campaign["completed_at"])
+            campaign["duration"] = int((completed - created).total_seconds())
+        except:
+            campaign["duration"] = None
+    
+    # Transform review data for frontend compatibility
+    if campaign.get("review"):
+        review = campaign["review"]
+        # Extract overall status
+        overall_status = review.get("overall_status", "unknown")
+        status_display = "approved" if overall_status == "approved" else "needs_revision"
+        
+        # Compile feedback from all pieces
+        feedback_parts = []
+        if review.get("blog_post", {}).get("correction_note"):
+            feedback_parts.append(f"Blog: {review['blog_post']['correction_note']}")
+        if review.get("social_thread", {}).get("correction_note"):
+            feedback_parts.append(f"Social: {review['social_thread']['correction_note']}")
+        if review.get("email_teaser", {}).get("correction_note"):
+            feedback_parts.append(f"Email: {review['email_teaser']['correction_note']}")
+        
+        feedback_text = " | ".join(feedback_parts) if feedback_parts else "All content approved!"
+        
+        campaign["review"] = {
+            "status": status_display,
+            "feedback": feedback_text,
+            "details": review  # Keep original details for debugging
+        }
+    
+    return campaign
 
 
 @app.get("/api/campaigns/{campaign_id}/feedback-history")
