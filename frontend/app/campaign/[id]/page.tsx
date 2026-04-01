@@ -236,18 +236,39 @@ function CampaignDetailContent({ id }: { id: string }) {
             {campaign.review && (
               <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Editor Review</h3>
-                <div className={`p-3 rounded-lg mb-3 ${
-                  campaign.review.status === 'approved'
-                    ? 'bg-[#06ffa5]/10 border border-[#06ffa5]/30'
-                    : 'bg-[#ffd60a]/10 border border-[#ffd60a]/30'
-                }`}>
-                  <span className={`text-sm font-medium ${
-                    campaign.review.status === 'approved' ? 'text-[#06ffa5]' : 'text-[#ffd60a]'
-                  }`}>
-                    {campaign.review.status === 'approved' ? 'Approved' : 'Needs Revision'}
-                  </span>
-                </div>
-                <p className="text-sm text-[#b0b0b0]">{campaign.review.feedback}</p>
+                
+                {campaign.review.status === 'approved' ? (
+                  <div className="bg-[#06e796] border border-[#06ffa5]/30 rounded-lg p-3">
+                    <span className="text-sm font-medium text-black">All content approved</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="bg-[#f8d25e] border border-[#ffd60a]/30 rounded-lg p-3 mb-4">
+                      <span className="text-sm font-medium text-black">Needs Revision</span>
+                    </div>
+                    
+                    {/* Parse and display feedback by type */}
+                    <div className="space-y-3">
+                      {campaign.review.feedback.split(' | ').map((item, idx) => {
+                        const [type, ...messageParts] = item.split(': ');
+                        const message = messageParts.join(': ');
+                        
+                        const typeColors: Record<string, string> = {
+                          'Blog': 'bg-[#00d4ff] border-l-4 border-[#00d4ff]',
+                          'Social': 'bg-[#06ffa5] border-l-4 border-[#06ffa5]',
+                          'Email': 'bg-[#ffd60a] border-l-4 border-[#ffd60a]',
+                        };
+                        
+                        return (
+                          <div key={idx} className={`p-3 rounded ${typeColors[type.trim()] || 'bg-[#3e4040]'}`}>
+                            <span className="text-xs font-semibold text-black uppercase">{type}</span>
+                            <p className="text-sm text-black mt-1">{message.trim()}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -305,12 +326,12 @@ function CampaignDetailContent({ id }: { id: string }) {
                       key={index}
                       className={`p-4 rounded-lg border ${
                         item.agent === 'researcher'
-                          ? 'bg-[#0CBEF6]'
+                          ? 'bg-[#00d4ff]'
                           : item.agent === 'copywriter'
-                          ? 'bg-[#F8D25E]'
+                          ? 'bg-[#06ffa5]'
                           : item.agent === 'editor'
-                          ? 'bg-[#FFA7A7]'
-                          : 'bg-[#06E796]'
+                          ? 'bg-[#ffd60a]'
+                          : 'bg-[#808080]/20'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -321,7 +342,7 @@ function CampaignDetailContent({ id }: { id: string }) {
                             ? 'text-black'
                             : item.agent === 'editor'
                             ? 'text-black'
-                            : 'text-black'
+                            : 'text-white'
                         }`}>
                           {item.agent}
                         </span>
@@ -329,12 +350,14 @@ function CampaignDetailContent({ id }: { id: string }) {
                           {new Date(item.timestamp).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-sm text-black">{item.message}</p>
+                      <p className={`text-sm ${
+                        item.agent === 'researcher' || item.agent === 'copywriter' || item.agent === 'editor'
+                          ? 'text-black'
+                          : 'text-white'
+                      }`}>{item.message}</p>
                       {item.details && (
                         <p className="text-xs text-[#808080] mt-2 font-mono bg-[#1a1a1a] p-2 rounded">
-                          {typeof item.details === 'string' 
-                            ? item.details 
-                            : item.details.feedback || JSON.stringify(item.details)}
+                          {typeof item.details === 'string' ? item.details : JSON.stringify(item.details)}
                         </p>
                       )}
                     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { formatMarkdownContent, formatSocialPosts } from '@/lib/format';
 import { FaHeart, FaRetweet, FaShare } from 'react-icons/fa';
 
 type DeviceType = 'mobile' | 'desktop';
@@ -17,32 +18,69 @@ interface ResponsivePreviewProps {
 export function ResponsivePreview({ content, title, type, className }: ResponsivePreviewProps) {
   const [device, setDevice] = useState<DeviceType>('mobile');
 
-  const renderBlogContent = () => (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">{title}</h1>
-        <div className="flex items-center gap-2 text-[#808080] text-sm">
-          <span>By Content Factory</span>
-          <span>•</span>
-          <span>{new Date().toLocaleDateString()}</span>
-        </div>
-      </div>
-      <div className="h-48 bg-gradient-to-r from-[#00d4ff] to-[#06E796] rounded-lg mb-6"></div>
-      <article className="text-[#b0b0b0] leading-relaxed whitespace-pre-wrap prose prose-invert max-w-none">
-        {content}
-      </article>
-    </div>
-  );
-
-  const renderSocialContent = () => {
-    // Parse platform-specific content or treat as single thread
-    const lines = content.split('\n').filter(l => l.trim());
-    
+  const renderBlogContent = () => {
+    const formatted = formatMarkdownContent(content);
     return (
       <div className="space-y-4">
-        {lines.map((line, idx) => (
-          <div key={idx} className="border border-[#3a3a3a] rounded-2xl p-4 hover:bg-[#0a0a0a]/50 transition">
-            {/* Tweet Header */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">{title}</h1>
+          <div className="flex items-center gap-2 text-[#808080] text-sm">
+            <span>By Content Factory</span>
+            <span>•</span>
+            <span>{new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+        <div className="h-48 bg-gradient-to-r from-[#00d4ff] to-[#06E796] rounded-lg mb-6"></div>
+        <article className="prose prose-invert max-w-none space-y-2">
+          {formatted.map((el, idx) => {
+            switch (el.type) {
+              case 'h1':
+                return (
+                  <h1 key={idx} className="text-2xl font-bold text-white mt-6 mb-4">
+                    {el.text}
+                  </h1>
+                );
+              case 'h2':
+                return (
+                  <h2 key={idx} className="text-xl font-bold text-white mt-5 mb-3">
+                    {el.text}
+                  </h2>
+                );
+              case 'h3':
+                return (
+                  <h3 key={idx} className="text-lg font-semibold text-[#00d4ff] mt-4 mb-2">
+                    {el.text}
+                  </h3>
+                );
+              case 'li':
+                return (
+                  <li key={idx} className="text-[#b0b0b0] ml-6 mb-1 list-disc">
+                    {el.text}
+                  </li>
+                );
+              case 'p':
+                return (
+                  <p key={idx} className="text-[#b0b0b0] mb-2 leading-relaxed">
+                    {el.text}
+                  </p>
+                );
+              case 'spacer':
+                return <div key={idx} className="h-3" />;
+              default:
+                return null;
+            }
+          })}
+        </article>
+      </div>
+    );
+  };
+
+  const renderSocialContent = () => {
+    const posts = formatSocialPosts(content);
+    return (
+      <div className="space-y-4">
+        {posts.map((post) => (
+          <div key={`post-${post.number}`} className="border border-[#3a3a3a] rounded-2xl p-4 hover:bg-[#0a0a0a]/50 transition">
             <div className="flex items-start gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#00d4ff] to-[#06E796]"></div>
               <div className="flex-1">
@@ -52,13 +90,12 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
                   <span className="text-[#808080]">·</span>
                   <span className="text-[#808080]">now</span>
                 </div>
+                {post.platform && (
+                  <span className="text-xs text-[#00d4ff] mt-1">{post.platform}</span>
+                )}
               </div>
             </div>
-
-            {/* Tweet Content */}
-            <p className="text-[#b0b0b0] mb-4 leading-normal">{line}</p>
-
-            {/* Tweet Actions */}
+            <p className="text-[#b0b0b0] mb-4 leading-relaxed whitespace-pre-wrap">{post.content}</p>
             <div className="flex items-center justify-between text-[#808080] text-sm max-w-xs">
               <div className="flex items-center gap-2 hover:text-[#00d4ff] cursor-pointer">
                 <span>💬</span>
@@ -82,22 +119,64 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
     );
   };
 
-  const renderEmailContent = () => (
-    <div className="space-y-4">
-      <div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded p-4">
-        <p className="text-[#808080] text-sm mb-3">From: campaigns@contentfactory.io</p>
-        <p className="text-[#808080] text-sm mb-4">Subject: {title}</p>
-      </div>
-      <div className="bg-white text-[#0a0a0a] rounded p-6 space-y-4">
-        <article className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{content}</article>
-        <div className="pt-4 border-t border-gray-300">
-          <button className="bg-[#00d4ff] text-[#0a0a0a] px-6 py-2 rounded-lg font-semibold hover:brightness-110">
-            View Full Campaign
-          </button>
+  const renderEmailContent = () => {
+    const formatted = formatMarkdownContent(content);
+    return (
+      <div className="space-y-4">
+        <div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded p-4">
+          <p className="text-[#808080] text-sm mb-3">From: campaigns@contentfactory.io</p>
+          <p className="text-[#808080] text-sm mb-4">Subject: {title}</p>
+        </div>
+        <div className="bg-white text-[#0a0a0a] rounded p-6 space-y-3">
+          <article className="font-sans text-sm leading-relaxed">
+            {formatted.map((el, idx) => {
+              switch (el.type) {
+                case 'h1':
+                  return (
+                    <h1 key={idx} className="text-2xl font-bold text-[#0a0a0a] mt-6 mb-4">
+                      {el.text}
+                    </h1>
+                  );
+                case 'h2':
+                  return (
+                    <h2 key={idx} className="text-xl font-bold text-[#0a0a0a] mt-5 mb-3">
+                      {el.text}
+                    </h2>
+                  );
+                case 'h3':
+                  return (
+                    <h3 key={idx} className="text-lg font-semibold text-[#00d4ff] mt-4 mb-2">
+                      {el.text}
+                    </h3>
+                  );
+                case 'li':
+                  return (
+                    <li key={idx} className="text-[#0a0a0a] ml-6 mb-1 list-disc">
+                      {el.text}
+                    </li>
+                  );
+                case 'p':
+                  return (
+                    <p key={idx} className="text-[#0a0a0a] mb-2 leading-relaxed">
+                      {el.text}
+                    </p>
+                  );
+                case 'spacer':
+                  return <div key={idx} className="h-3" />;
+                default:
+                  return null;
+              }
+            })}
+          </article>
+          <div className="pt-4 border-t border-gray-300">
+            <button className="bg-[#00d4ff] text-[#0a0a0a] px-6 py-2 rounded-lg font-semibold hover:brightness-110">
+              View Full Campaign
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderContent = () => {
     switch (type) {

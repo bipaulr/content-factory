@@ -112,9 +112,15 @@ function NewCampaignContent() {
         eventSource.close();
         setIsProcessing(false);
       };
-    } catch (error) {
+    } catch (error: any) {
       console.log(' Error creating campaign:', error);
-      showToast('error', 'Failed to create campaign. Is the backend running?');
+      
+      // Extract meaningful error message from axios error
+      const errorMessage = error?.response?.data?.detail || 
+                          error?.message || 
+                          'Failed to create campaign. Is the backend running?';
+      
+      showToast('error', errorMessage);
       setIsProcessing(false);
     }
   }, [inputMode, inputText, inputUrl, selectedFile, router, showToast]);
@@ -214,7 +220,7 @@ function NewCampaignContent() {
                   />
                   {selectedFile && (
                     <p className="text-sm text-[#00d4ff] mt-3">
-                      ✓ {selectedFile.name}
+                      {selectedFile.name}
                     </p>
                   )}
                   <p className="text-xs text-[#808080] mt-3">

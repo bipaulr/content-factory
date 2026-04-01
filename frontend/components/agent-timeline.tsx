@@ -11,27 +11,27 @@ interface AgentTimelineProps {
 const agentConfig: Record<AgentType, { icon: string; color: string; bgColor: string; borderColor: string }> = {
   researcher: {
     icon: '🔬',
-    color: 'text-[#00d4ff]',
-    bgColor: 'bg-[#00d4ff]/10',
-    borderColor: 'border-[#00d4ff]/30',
+    color: 'text-black',
+    bgColor: 'bg-[#00d4ff]',
+    borderColor: 'border-[#00d4ff]',
   },
   copywriter: {
     icon: '📝',
-    color: 'text-[#ff8c42]',
-    bgColor: 'bg-[#ff8c42]/10',
-    borderColor: 'border-[#ff8c42]/30',
+    color: 'text-black',
+    bgColor: 'bg-[#06ffa5]',
+    borderColor: 'border-[#06ffa5]',
   },
   editor: {
     icon: '👨‍⚖️',
-    color: 'text-[#ff006e]',
-    bgColor: 'bg-[#ff006e]/10',
-    borderColor: 'border-[#ff006e]/30',
+    color: 'text-black',
+    bgColor: 'bg-[#ffd60a]',
+    borderColor: 'border-[#ffd60a]',
   },
   system: {
     icon: '⚙️',
-    color: 'text-[#808080]',
-    bgColor: 'bg-[#808080]/10',
-    borderColor: 'border-[#808080]/30',
+    color: 'text-white',
+    bgColor: 'bg-[#808080]/20',
+    borderColor: 'border-[#808080]/50',
   },
 };
 
@@ -87,11 +87,19 @@ export function AgentTimeline({ messages, className }: AgentTimelineProps) {
                   "w-2 h-2 rounded-full",
                   statusIndicator[message.status]
                 )} />
-                <span className="text-xs text-[#808080]">
+                <span className={cn(
+                  "text-xs",
+                  message.agent === 'system' ? "text-[#808080]" : "text-gray-700"
+                )}>
                   {message.timestamp.toLocaleTimeString()}
                 </span>
               </div>
-              <p className="text-[#b0b0b0] text-sm">{message.message}</p>
+              <p className={cn(
+                "text-sm",
+                message.agent === 'researcher' || message.agent === 'copywriter' || message.agent === 'editor'
+                  ? "text-black"
+                  : "text-[#b0b0b0]"
+              )}>{message.message}</p>
               {message.details && (
                 <p className="text-xs text-[#808080] mt-2 font-mono bg-[#1a1a1a] p-2 rounded">
                   {message.details}

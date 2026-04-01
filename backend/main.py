@@ -655,8 +655,8 @@ def get_analytics():
         if campaign.get("status") == "completed":
             try:
                 created = datetime.fromisoformat(campaign.get("created_at", ""))
-                completed = datetime.fromisoformat(campaign.get("completed_at", ""))
-                duration = (completed - created).total_seconds()
+                completed_at = datetime.fromisoformat(campaign.get("completed_at", ""))
+                duration = (completed_at - created).total_seconds()
                 completion_times.append(duration)
             except:
                 pass

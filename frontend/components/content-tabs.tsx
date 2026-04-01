@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ResponsivePreview } from './responsive-preview';
+import { formatMarkdownContent, formatSocialPosts } from '@/lib/format';
 import type { ContentTab, TabItem } from '@/lib/types';
 
 const tabs: TabItem[] = [
@@ -13,7 +14,7 @@ const tabs: TabItem[] = [
 
 interface ContentTabsProps {
   blogContent?: string;
-  socialContent?: string;
+  socialContent?: string | string[];
   emailContent?: string;
   className?: string;
 }
@@ -22,30 +23,51 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
   const [activeTab, setActiveTab] = useState<ContentTab>('blog');
   const [viewMode, setViewMode] = useState<'structured' | 'preview'>('structured');
 
-  const parseSocialContent = (content: string) => {
-    // Split by numbered posts: 1/, 2/, 3/, etc.
-    const postRegex = /^\d+\/\s/gm;
-    
-    if (!postRegex.test(content)) {
-      // If no numbered format found, return null to use fallback
-      return null;
-    }
-
-    // Split by the numbered pattern
-    const posts = content.split(/^\d+\/\s/gm).filter(p => p.trim());
-    
-    return posts.map((post, idx) => ({
-      number: idx + 1,
-      content: post.trim()
-    }));
-  };
-
   const renderContent = () => {
     switch (activeTab) {
       case 'blog':
         return blogContent ? (
           <div className="prose prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-[#b0b0b0]">{blogContent}</div>
+            <div className="text-[#b0b0b0] space-y-2">
+              {formatMarkdownContent(blogContent).map((el, idx) => {
+                switch (el.type) {
+                  case 'h1':
+                    return (
+                      <h1 key={idx} className="text-2xl font-bold text-white mt-6 mb-4">
+                        {el.text}
+                      </h1>
+                    );
+                  case 'h2':
+                    return (
+                      <h2 key={idx} className="text-xl font-bold text-white mt-5 mb-3">
+                        {el.text}
+                      </h2>
+                    );
+                  case 'h3':
+                    return (
+                      <h3 key={idx} className="text-lg font-semibold text-[#00d4ff] mt-4 mb-2">
+                        {el.text}
+                      </h3>
+                    );
+                  case 'li':
+                    return (
+                      <li key={idx} className="text-[#b0b0b0] ml-6 mb-1 list-disc">
+                        {el.text}
+                      </li>
+                    );
+                  case 'p':
+                    return (
+                      <p key={idx} className="text-[#b0b0b0] mb-2 leading-relaxed">
+                        {el.text}
+                      </p>
+                    );
+                  case 'spacer':
+                    return <div key={idx} className="h-3" />;
+                  default:
+                    return null;
+                }
+              })}
+            </div>
           </div>
         ) : (
           <EmptyState message="No blog content generated yet." />
@@ -55,15 +77,25 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
           return <EmptyState message="No social content generated yet." />;
         }
         
-        const parsedPlatforms = parseSocialContent(socialContent);
+        // Convert array to string if needed
+        const socialContentStr = Array.isArray(socialContent) 
+          ? socialContent.join('\n\n') 
+          : socialContent;
+        
+        const parsedPlatforms = formatSocialPosts(socialContentStr);
         
         if (parsedPlatforms && parsedPlatforms.length > 0) {
           return (
             <div className="space-y-4">
-              {parsedPlatforms.map((post, idx) => (
-                <div key={idx} className="bg-[#1a1a1a] rounded-lg border border-[#3a3a3a] p-4">
-                  <h3 className="text-sm font-semibold text-[#00d4ff] mb-2">Post {post.number}</h3>
-                  <p className="text-[#b0b0b0] whitespace-pre-wrap">{post.content}</p>
+              {parsedPlatforms.map((post) => (
+                <div key={`post-${post.number}`} className="bg-[#1a1a1a] rounded-lg border border-[#3a3a3a] p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-[#00d4ff]">
+                      Post {post.number}
+                    </h3>
+                    <span className="text-xs text-[#808080]">#{post.number}</span>
+                  </div>
+                  <p className="text-[#b0b0b0] leading-relaxed whitespace-pre-wrap">{post.content}</p>
                 </div>
               ))}
             </div>
@@ -73,13 +105,52 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
         // Fallback to original display if parsing fails
         return (
           <div className="prose prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-[#b0b0b0]">{socialContent}</div>
+            <div className="whitespace-pre-wrap text-[#b0b0b0]">{socialContentStr}</div>
           </div>
         );
       case 'email':
         return emailContent ? (
           <div className="prose prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-[#b0b0b0]">{emailContent}</div>
+            <div className="text-[#b0b0b0] space-y-2 leading-relaxed">
+              {formatMarkdownContent(emailContent).map((el, idx) => {
+                switch (el.type) {
+                  case 'h1':
+                    return (
+                      <h1 key={idx} className="text-2xl font-bold text-white mt-6 mb-4">
+                        {el.text}
+                      </h1>
+                    );
+                  case 'h2':
+                    return (
+                      <h2 key={idx} className="text-xl font-bold text-white mt-5 mb-3">
+                        {el.text}
+                      </h2>
+                    );
+                  case 'h3':
+                    return (
+                      <h3 key={idx} className="text-lg font-semibold text-[#00d4ff] mt-4 mb-2">
+                        {el.text}
+                      </h3>
+                    );
+                  case 'li':
+                    return (
+                      <li key={idx} className="text-[#b0b0b0] ml-6 mb-1 list-disc">
+                        {el.text}
+                      </li>
+                    );
+                  case 'p':
+                    return (
+                      <p key={idx} className="text-[#b0b0b0] mb-2 leading-relaxed">
+                        {el.text}
+                      </p>
+                    );
+                  case 'spacer':
+                    return <div key={idx} className="h-3" />;
+                  default:
+                    return null;
+                }
+              })}
+            </div>
           </div>
         ) : (
           <EmptyState message="No email content generated yet." />
@@ -124,7 +195,7 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
                 : 'text-[#808080] hover:text-white'
             )}
           >
-            📋 Structured
+            Structured
           </button>
           <button
             onClick={() => setViewMode('preview')}
@@ -135,7 +206,7 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
                 : 'text-[#808080] hover:text-white'
             )}
           >
-            👁️ Preview
+            Preview
           </button>
         </div>
       </div>
@@ -148,7 +219,11 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
               <ResponsivePreview content={blogContent} title="Blog Post" type="blog" />
             )}
             {activeTab === 'social' && socialContent && (
-              <ResponsivePreview content={socialContent} title="Social Media" type="social" />
+              <ResponsivePreview 
+                content={Array.isArray(socialContent) ? socialContent.join('\n\n') : socialContent} 
+                title="Social Media" 
+                type="social" 
+              />
             )}
             {activeTab === 'email' && emailContent && (
               <ResponsivePreview content={emailContent} title="Email Teaser" type="email" />

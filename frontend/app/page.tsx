@@ -106,14 +106,14 @@ export default function DashboardPage() {
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Hero Section */}
-          <section className="text-center py-8 px-4">
+          <section className="text-center py-0 pt-0 px-4">
             <h1 className="text-4xl md:text-[17rem] font-extrabold text-white -mb-4 text-balance">
               cofy.
             </h1>
-            <p className="text-lg py-4 text-[#b0b0b0] mb-6">
+            <p className="text-lg py-6 pt-12 text-[#b0b0b0] mb-0">
               The AI-powered content factory for effortless multi-channel campaigns.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col py-4 sm:flex-row items-center justify-center gap-4">
               <Link href="/campaign/new">
                 <GradientButton variant="primary" size="lg">
                   Create New Campaign
@@ -129,7 +129,7 @@ export default function DashboardPage() {
 
           {/* Quick Stats */}
           {analytics && (
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <section className="grid grid-cols-2 pt-5 md:grid-cols-4 gap-4 mb-12">
               <MetricCard
                 label="Total Campaigns"
                 value={analytics.total_campaigns}
@@ -222,7 +222,13 @@ export default function DashboardPage() {
                             <StatusBadge status={campaign.status} />
                           </td>
                           <td className="px-4 py-3 text-sm text-[#b0b0b0]">
-                            {new Date(campaign.created_at).toLocaleString()}
+                            {new Date(campaign.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </td>
                           <td className="px-4 py-3">
                             <Link href={`/campaign/${campaign.id}`}>

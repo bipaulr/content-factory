@@ -9,23 +9,19 @@ interface StatusBadgeProps {
 const statusConfig: Record<CampaignStatus, { label: string; className: string }> = {
   completed: {
     label: 'Completed',
-    className: 'bg-[#06ffa5]/10 text-[#06ffa5] border-[#06ffa5]/50',
+    className: 'bg-[#06ffa5] text-black border-[#06ffa5]',
   },
   processing: {
     label: 'In Progress',
-    className: 'bg-[#ffd60a]/10 text-[#ffd60a] border-[#ffd60a]/50',
-  },
-  'in_progress': {
-    label: 'In Progress',
-    className: 'bg-[#ffd60a]/10 text-[#ffd60a] border-[#ffd60a]/50',
+    className: 'bg-[#00d4ff] text-black border-[#00d4ff]',
   },
   failed: {
     label: 'Failed',
-    className: 'bg-[#ff006e]/10 text-[#ff006e] border-[#ff006e]/50',
+    className: 'bg-[#ff4757] text-black border-[#ff4757]',
   },
   pending: {
     label: 'Pending',
-    className: 'bg-[#00d4ff]/10 text-[#00d4ff] border-[#00d4ff]/50',
+    className: 'bg-[#ffd60a] text-black border-[#ffd60a]  ',
   },
 } as const;
 
