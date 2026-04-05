@@ -84,7 +84,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={toast.id}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg",
+              "flex items-center gap-3 px-4 py-3 shadow-lg",
               "animate-in slide-in-from-right duration-300",
               toast.type === 'success' || toast.type === 'warning' ? 'text-[#0a0a0a]' : 'text-white',
               toastStyles[toast.type].bg

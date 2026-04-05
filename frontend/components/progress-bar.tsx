@@ -29,10 +29,10 @@ export function ProgressBar({
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
+      <div className="h-2 bg-[#1a1a1a] overflow-hidden">
         <div
           className={cn(
-            "h-full rounded-full transition-all duration-500 ease-out",
+            "h-full transition-all duration-500 ease-out",
             variantStyles[variant]
           )}
           style={{ width: `${percentage}%` }}

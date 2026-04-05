@@ -5,7 +5,7 @@
   /* Dark backgrounds */
   --background: #0a0a0a;
   --foreground: #ffffff;
-  --card: #252525;
+  --card: #1e2021;
   --card-foreground: #ffffff;
   --popover: #1a1a1a;
   --popover-foreground: #ffffff;
@@ -82,7 +82,7 @@
 .dark {
   --background: #0a0a0a;
   --foreground: #ffffff;
-  --card: #252525;
+  --card: #1e2021;
   --card-foreground: #ffffff;
   --popover: #1a1a1a;
   --popover-foreground: #ffffff;
@@ -130,7 +130,6 @@
   border: 2px solid transparent;
   background: linear-gradient(#0a0a0a, #0a0a0a) padding-box,
               linear-gradient(to right, #FFA7A7, #F7D15E, #0EBDF6, #06E796) border-box;
-  border-radius: 0.5rem;
   color: white;
   font-weight: 500;
 }

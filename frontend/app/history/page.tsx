@@ -118,7 +118,7 @@ export default function HistoryPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as CampaignStatus | 'all')}
-                className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00d4ff]"
+                className="bg-[#1a1a1a] border border-[#3a3a3a] px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00d4ff]"
               >
                 <option value="all">All</option>
                 <option value="completed">Completed</option>
@@ -135,17 +135,17 @@ export default function HistoryPage() {
           {/* Table */}
           {loading ? (
             <div className="flex items-center justify-center py-24">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00d4ff]" />
+              <div className="animate-spin h-8 w-8 border-b-2 border-[#00d4ff]" />
             </div>
           ) : campaigns.length === 0 ? (
-            <div className="text-center py-24 bg-[#1a1a1a] rounded-lg border border-[#3a3a3a]">
+            <div className="text-center py-24 bg-[#1a1a1a] border border-[#3a3a3a]">
               <p className="text-[#808080] mb-4">No campaigns yet. Create one to get started.</p>
               <Link href="/campaign/new">
                 <GradientButton variant="primary">Create Campaign</GradientButton>
               </Link>
             </div>
           ) : (
-            <div className="bg-[#1a1a1a] rounded-lg border border-[#3a3a3a] overflow-hidden">
+            <div className="bg-[#1a1a1a] border border-[#3a3a3a] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -189,7 +189,7 @@ export default function HistoryPage() {
                     {filteredAndSortedCampaigns.map((campaign) => (
                       <tr
                         key={campaign.id}
-                        className="border-b border-[#3a3a3a] last:border-b-0 hover:bg-[#252525] transition-colors"
+                        className="border-b border-[#3a3a3a] last:border-b-0 hover:bg-[#1e2021] transition-colors"
                       >
                         <td className="px-4 py-4">
                           <code className="text-sm text-[#00d4ff] font-mono">

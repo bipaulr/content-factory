@@ -1,6 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { BsEyeglasses } from 'react-icons/bs';
+import { LuPencil, LuMicroscope, LuCog } from 'react-icons/lu';
 import type { AgentMessage, AgentType } from '@/lib/types';
 
 interface AgentTimelineProps {
@@ -60,48 +62,45 @@ export function AgentTimeline({ messages, className }: AgentTimelineProps) {
           <div
             key={message.id}
             className={cn(
-              "flex gap-4 p-4 rounded-lg border transition-all duration-300",
-              config.bgColor,
+              "flex gap-4 p-4 border transition-all duration-300 bg-[#0a0a0a]",
               config.borderColor
             )}
           >
             {/* Agent Icon */}
-            <div className="flex-shrink-0">
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center text-xl",
-                config.bgColor,
-                "border",
-                config.borderColor
-              )}>
-                {config.icon}
-              </div>
+            <div className="flex-shrink-0 flex items-center justify-center text-xl">
+              {message.agent === 'editor' ? (
+                <BsEyeglasses className="text-[#ffd60a]" size={20} />
+              ) : message.agent === 'copywriter' ? (
+                <LuPencil className="text-[#06ffa5]" size={20} />
+              ) : message.agent === 'researcher' ? (
+                <LuMicroscope className="text-[#00d4ff]" size={20} />
+              ) : message.agent === 'system' ? (
+                <LuCog className="text-[#e5dff0]" size={20} />
+              ) : (
+                config.icon
+              )}
             </div>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className={cn("font-medium capitalize", config.color)}>
+                <span className="font-medium capitalize text-white">
                   {message.agent}
                 </span>
                 <div className={cn(
-                  "w-2 h-2 rounded-full",
+                  "w-2 h-2",
                   statusIndicator[message.status]
                 )} />
                 <span className={cn(
                   "text-xs",
-                  message.agent === 'system' ? "text-[#808080]" : "text-gray-700"
+                  message.agent === 'system' ? "text-[#808080]" : "text-[#b0b0b0]"
                 )}>
                   {message.timestamp.toLocaleTimeString()}
                 </span>
               </div>
-              <p className={cn(
-                "text-sm",
-                message.agent === 'researcher' || message.agent === 'copywriter' || message.agent === 'editor'
-                  ? "text-black"
-                  : "text-[#b0b0b0]"
-              )}>{message.message}</p>
+              <p className="text-sm text-white">{message.message}</p>
               {message.details && (
-                <p className="text-xs text-[#808080] mt-2 font-mono bg-[#1a1a1a] p-2 rounded">
+                <p className="text-xs text-[#808080] mt-2 font-mono bg-[#1a1a1a] p-2">
                   {message.details}
                 </p>
               )}

@@ -163,13 +163,21 @@ class CampaignTracker:
         if not campaign_file.exists():
             return None
         
-        with open(campaign_file, "r") as f:
-            data = json.load(f)
+        try:
+            with open(campaign_file, "r") as f:
+                content = f.read()
+                if not content.strip():
+                    # File is empty, return None
+                    return None
+                data = json.loads(content)
+        except (json.JSONDecodeError, IOError):
+            # Invalid JSON or read error, return None
+            return None
         
         # Reconstruct tracker object
         tracker = CampaignTracker.__new__(CampaignTracker)
         tracker.campaign_id = campaign_id
-        tracker.source_text = data["source_text"]
+        tracker.source_text = data.get("source_text", "")
         tracker.campaigns_dir = Path("campaigns")
         tracker.campaign_data = data
         return tracker

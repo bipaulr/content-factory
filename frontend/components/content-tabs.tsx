@@ -86,16 +86,21 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
         
         if (parsedPlatforms && parsedPlatforms.length > 0) {
           return (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {parsedPlatforms.map((post) => (
-                <div key={`post-${post.number}`} className="bg-[#1a1a1a] rounded-lg border border-[#3a3a3a] p-4">
-                  <div className="flex items-center justify-between mb-3">
+                <div key={`post-${post.number}`} className="bg-[#0a0a0a] border-l-4 border-[#00d4ff] p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="inline-flex items-center justify-center w-6 h-6 bg-[#00d4ff] text-black text-xs font-semibold rounded">
+                      {post.number}
+                    </span>
                     <h3 className="text-sm font-semibold text-[#00d4ff]">
                       Post {post.number}
                     </h3>
-                    <span className="text-xs text-[#808080]">#{post.number}</span>
+                    {post.platform && (
+                      <span className="text-xs text-[#808080] ml-auto">{post.platform}</span>
+                    )}
                   </div>
-                  <p className="text-[#b0b0b0] leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                  <p className="text-[#b0b0b0] leading-relaxed whitespace-pre-wrap text-sm">{post.content}</p>
                 </div>
               ))}
             </div>
@@ -185,11 +190,11 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex gap-2 bg-[#1a1a1a] rounded-lg p-1 w-fit">
+        <div className="flex gap-2 bg-[#1a1a1a] p-1 w-fit">
           <button
             onClick={() => setViewMode('structured')}
             className={cn(
-              'px-3 py-2 rounded text-xs sm:text-sm font-medium transition-all',
+              'px-3 py-2 text-xs sm:text-sm font-medium transition-all',
               viewMode === 'structured'
                 ? 'bg-[#00d4ff] text-[#0a0a0a]'
                 : 'text-[#808080] hover:text-white'
@@ -200,7 +205,7 @@ export function ContentTabs({ blogContent, socialContent, emailContent, classNam
           <button
             onClick={() => setViewMode('preview')}
             className={cn(
-              'px-3 py-2 rounded text-xs sm:text-sm font-medium transition-all',
+              'px-3 py-2 text-xs sm:text-sm font-medium transition-all',
               viewMode === 'preview'
                 ? 'bg-[#00d4ff] text-[#0a0a0a]'
                 : 'text-[#808080] hover:text-white'

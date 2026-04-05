@@ -147,7 +147,7 @@ function NewCampaignContent() {
         </div>
 
         {/* Input Section */}
-        <div className="rounded-lg border border-[#1F2022] p-6 mb-8">
+        <div className="border border-[#1F2022] p-6 mb-8">
           {/* Input Mode Tabs */}
           <div className="flex gap-2 mb-6 border-b border-[#3a3a3a]">
             <button
@@ -193,7 +193,7 @@ function NewCampaignContent() {
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={isProcessing}
                 placeholder="Enter your product description here. Include key features, benefits, target audience, and unique selling points..."
-                className="w-full h-48 bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg px-4 py-3 text-white placeholder-[#808080] resize-none focus:outline-none focus:border-[#00d4ff] transition-colors disabled:opacity-50"
+                className="w-full h-48 bg-[#1a1a1a] border border-[#3a3a3a] px-4 py-3 text-white placeholder-[#808080] resize-none focus:outline-none focus:border-[#00d4ff] transition-colors disabled:opacity-50"
               />
               <div className="flex items-end justify-between mt-4">
                 <span className="text-xs text-[#808080]">
@@ -210,7 +210,7 @@ function NewCampaignContent() {
                 Upload Document
               </label>
               <div className="flex flex-col gap-4">
-                <div className="border-2 border-dashed border-[#3a3a3a] rounded-lg p-8 text-center">
+                <div className="border-2 border-dashed border-[#3a3a3a] p-8 text-center">
                   <input
                     type="file"
                     accept=".txt,.pdf,.doc,.docx"
@@ -243,7 +243,7 @@ function NewCampaignContent() {
                 onChange={(e) => setInputUrl(e.target.value)}
                 disabled={isProcessing}
                 placeholder="https://example.com/article"
-                className="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg px-4 py-3 text-white placeholder-[#808080] focus:outline-none focus:border-[#00d4ff] transition-colors disabled:opacity-50"
+                className="w-full bg-[#1a1a1a] border border-[#3a3a3a] px-4 py-3 text-white placeholder-[#808080] focus:outline-none focus:border-[#00d4ff] transition-colors disabled:opacity-50"
               />
               <p className="text-xs text-[#808080] mt-3">
                 We'll extract and analyze content from the provided URL
@@ -266,7 +266,7 @@ function NewCampaignContent() {
 
         {/* Live Agent Room */}
         {isProcessing && (
-          <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+          <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-white">Live Agent Room</h2>
@@ -277,7 +277,7 @@ function NewCampaignContent() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#06ffa5] animate-pulse" />
+                <div className="w-2 h-2 bg-[#06ffa5] animate-pulse" />
                 <span className="text-sm text-[#06ffa5]">Live</span>
               </div>
             </div>
@@ -299,22 +299,22 @@ function NewCampaignContent() {
         {/* Tips Section */}
         {!isProcessing && (
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-4 bg-[#1a1a1a] rounded-lg border border-[#3a3a3a]">
-              <div className="w-10 h-10 rounded-lg bg-[#11BDF7] flex items-center justify-center mb-3">
+            <div className="p-4 bg-[#1a1a1a] border border-[#3a3a3a]">
+              <div className="w-10 h-10 bg-[#11BDF7] flex items-center justify-center mb-3">
                 <FaInfo className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-medium text-white mb-1">Be Detailed</h3>
               <p className="text-xs text-[#808080]">Include product features, benefits, and unique selling points.</p>
             </div>
-            <div className="p-4 bg-[#1a1a1a] rounded-lg border border-[#3a3a3a]">
-              <div className="w-10 h-10 rounded-lg bg-[#FFA7A7] text-white flex items-center justify-center mb-3">
+            <div className="p-4 bg-[#1a1a1a] border border-[#3a3a3a]">
+              <div className="w-10 h-10 bg-[#FFA7A7] text-white flex items-center justify-center mb-3">
                 <LuTarget className="w-6 h-6" />
               </div>
               <h3 className="text-sm font-medium text-white mb-1">Target Audience</h3>
               <p className="text-xs text-[#808080]">Mention who your product is for to get better content.</p>
             </div>
-            <div className="p-4 bg-[#1a1a1a] rounded-lg border border-[#3a3a3a]">
-              <div className="w-10 h-10 rounded-lg bg-[#FAD161] text-white flex items-center justify-center mb-3">
+            <div className="p-4 bg-[#1a1a1a] border border-[#3a3a3a]">
+              <div className="w-10 h-10 bg-[#FAD161] text-white flex items-center justify-center mb-3">
                 <FaStar className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-medium text-white mb-1">Tone & Style</h3>

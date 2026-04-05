@@ -33,7 +33,7 @@ export const GradientButton = forwardRef<HTMLButtonElement, GradientButtonProps>
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          "relative inline-flex items-center justify-center gap-2 rounded-lg font-medium",
+          "relative inline-flex items-center justify-center gap-2 font-medium",
           "transition-all duration-200 active:scale-95 hover:scale-95 cursor-pointer",
           "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
           variantStyles[variant],

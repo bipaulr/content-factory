@@ -61,15 +61,20 @@ RULES:
 - Keep each post under 280 characters
 - Use 1-2 relevant emojis per post
 - Tone: Engaging, punchy, conversational
+- CRITICAL: Each post MUST be on its own line and clearly separated
 
-Format as:
-1/ [post 1]
-2/ [post 2]
-3/ [post 3]
-4/ [post 4]
-5/ [post 5]
+Format EXACTLY as shown below with blank lines between posts:
+1. [post 1 content here]
 
-Return ONLY the formatted thread.
+2. [post 2 content here]
+
+3. [post 3 content here]
+
+4. [post 4 content here]
+
+5. [post 5 content here]
+
+Return ONLY the formatted thread with exactly this structure. Do not add any extra text before or after.
 """
 
     # Email Teaser Prompt - Stricter constraints
@@ -172,15 +177,19 @@ APPROVED PIECES (keep exactly as-is):
 CRITICAL RULES:
 1. NEVER mention any features, specs, claims, or facts NOT in the numbered list above
 2. ONLY reference features by their number (e.g., "Feature 1", "Feature 3")
+CRITICAL RULES:
+1. NEVER mention any features, specs, claims, or facts NOT in the numbered list above
+2. ONLY reference features by their number (e.g., "Feature 1", "Feature 3")
 3. Keep all approved pieces exactly unchanged
 4. Fix ONLY the rejected pieces based on the specific feedback
 5. Ensure value proposition is central to all content
 6. Do NOT add pricing, availability, or unverified claims
+7. For social thread: Format each post with number and period, separated by blank lines: "1. content\n\n2. content\n\n3. content" etc.
 
 Return ONLY valid JSON:
 {{
   "blog_post": "blog post text",
-  "social_thread": "social thread text",
+  "social_thread": "1. post one\\n\\n2. post two\\n\\n3. post three\\n\\n4. post four\\n\\n5. post five",
   "email_teaser": "email teaser text"
 }}
 
@@ -278,11 +287,11 @@ RULES:
 - Tone: Engaging, punchy, conversational
 
 Format as:
-1/ [post 1]
-2/ [post 2]
-3/ [post 3]
-4/ [post 4]
-5/ [post 5]
+1. [post 1]
+2. [post 2]
+3. [post 3]
+4. [post 4]
+5. [post 5]
 
 Return ONLY the formatted thread.
 """

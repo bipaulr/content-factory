@@ -46,7 +46,7 @@ export function Navigation() {
             <span className="font-bold text-lg text-white">cofy.</span>
             {/* <div className="flex items-center gap-1.5 ml-2">
               <div className={cn(
-                "w-2 h-2 rounded-full transition-colors",
+                "w-2 h-2 transition-colors",
                 isConnected ? "bg-[#06ffa5]" : "bg-[#ff006e]"
               )} />
               <span className="text-xs text-[#808080]">

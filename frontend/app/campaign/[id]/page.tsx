@@ -2,6 +2,8 @@
 
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
+import { BsEyeglasses } from 'react-icons/bs';
+import { LuPencil, LuMicroscope, LuCog } from 'react-icons/lu';
 import { Navigation } from '@/components/navigation';
 import { GradientButton } from '@/components/gradient-button';
 import { StatusBadge } from '@/components/status-badge';
@@ -124,7 +126,7 @@ function CampaignDetailContent({ id }: { id: string }) {
         <Navigation />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00d4ff]" />
+            <div className="animate-spin h-8 w-8 border-b-2 border-[#00d4ff]" />
           </div>
         </main>
       </div>
@@ -178,7 +180,7 @@ function CampaignDetailContent({ id }: { id: string }) {
           {/* Left Column - Source & Facts */}
           <div className="lg:col-span-1 space-y-6">
             {/* Source Text */}
-            <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+            <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
               <button
                 onClick={() => setShowSourceText(!showSourceText)}
                 className="flex items-center justify-between w-full text-left"
@@ -202,7 +204,7 @@ function CampaignDetailContent({ id }: { id: string }) {
 
             {/* Fact Sheet */}
             {campaign.fact_sheet && (
-              <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+              <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Fact Sheet</h3>
                 <div className="space-y-4">
                   <div>
@@ -234,17 +236,17 @@ function CampaignDetailContent({ id }: { id: string }) {
 
             {/* Review Status */}
             {campaign.review && (
-              <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+              <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Editor Review</h3>
                 
                 {campaign.review.status === 'approved' ? (
-                  <div className="bg-[#06e796] border border-[#06ffa5]/30 rounded-lg p-3">
-                    <span className="text-sm font-medium text-black">All content approved</span>
+                  <div className="p-4 border border-[#06ffa5] bg-[#0a0a0a]">
+                    <span className="text-sm font-medium text-white">All content approved</span>
                   </div>
                 ) : (
                   <>
-                    <div className="bg-[#f8d25e] border border-[#ffd60a]/30 rounded-lg p-3 mb-4">
-                      <span className="text-sm font-medium text-black">Needs Revision</span>
+                    <div className="p-4 border border-[#ffd60a] bg-[#0a0a0a] mb-4">
+                      <span className="text-sm font-medium text-white">Needs Revision</span>
                     </div>
                     
                     {/* Parse and display feedback by type */}
@@ -254,15 +256,15 @@ function CampaignDetailContent({ id }: { id: string }) {
                         const message = messageParts.join(': ');
                         
                         const typeColors: Record<string, string> = {
-                          'Blog': 'bg-[#00d4ff] border-l-4 border-[#00d4ff]',
-                          'Social': 'bg-[#06ffa5] border-l-4 border-[#06ffa5]',
-                          'Email': 'bg-[#ffd60a] border-l-4 border-[#ffd60a]',
+                          'Blog': 'border-[#00d4ff]',
+                          'Social': 'border-[#06ffa5]',
+                          'Email': 'border-[#ffd60a]',
                         };
                         
                         return (
-                          <div key={idx} className={`p-3 rounded ${typeColors[type.trim()] || 'bg-[#3e4040]'}`}>
-                            <span className="text-xs font-semibold text-black uppercase">{type}</span>
-                            <p className="text-sm text-black mt-1">{message.trim()}</p>
+                          <div key={idx} className={`p-4 border bg-[#0a0a0a] ${typeColors[type.trim()] || 'border-[#808080]/50'}`}>
+                            <span className="text-xs font-semibold text-white uppercase">{type}</span>
+                            <p className="text-sm text-white mt-1">{message.trim()}</p>
                           </div>
                         );
                       })}
@@ -275,7 +277,7 @@ function CampaignDetailContent({ id }: { id: string }) {
 
           {/* Right Column - Content */}
           <div className="lg:col-span-2">
-            <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+            <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-white">Generated Content</h3>
                 <div className="flex gap-2">
@@ -318,50 +320,59 @@ function CampaignDetailContent({ id }: { id: string }) {
 
             {/* Feedback History */}
             {feedbackHistory.length > 0 && (
-              <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6 mt-6">
+              <div className="bg-[#1e2021] border border-[#3a3a3a] p-6 mt-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Feedback History</h3>
                 <div className="space-y-4">
-                  {feedbackHistory.map((item, index) => (
+                  {feedbackHistory.map((item, index) => {
+                    const borderColor = 
+                      item.agent === 'researcher'
+                        ? 'border-[#00d4ff]'
+                        : item.agent === 'copywriter'
+                        ? 'border-[#06ffa5]'
+                        : item.agent === 'editor'
+                        ? 'border-[#ffd60a]'
+                        : 'border-[#808080]/50';
+
+                    return (
                     <div
                       key={index}
-                      className={`p-4 rounded-lg border ${
-                        item.agent === 'researcher'
-                          ? 'bg-[#00d4ff]'
-                          : item.agent === 'copywriter'
-                          ? 'bg-[#06ffa5]'
-                          : item.agent === 'editor'
-                          ? 'bg-[#ffd60a]'
-                          : 'bg-[#808080]/20'
-                      }`}
+                      className={`flex gap-4 p-4 border bg-[#0a0a0a] ${borderColor}`}
                     >
+                      {/* Agent Icon */}
+                      <div className="flex-shrink-0 flex items-center justify-center text-xl">
+                        {item.agent === 'editor' ? (
+                          <BsEyeglasses className="text-[#ffd60a]" size={20} />
+                        ) : item.agent === 'copywriter' ? (
+                          <LuPencil className="text-[#06ffa5]" size={20} />
+                        ) : item.agent === 'researcher' ? (
+                          <LuMicroscope className="text-[#00d4ff]" size={20} />
+                        ) : item.agent === 'system' ? (
+                          <LuCog className="text-[#e5dff0]" size={20} />
+                        ) : (
+                          '⚙️'
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <span className={` text-lg font-semibold capitalize ${
-                          item.agent === 'researcher'
-                            ? 'text-black'
-                            : item.agent === 'copywriter'
-                            ? 'text-black'
-                            : item.agent === 'editor'
-                            ? 'text-black'
-                            : 'text-white'
-                        }`}>
+                        <span className="text-lg font-semibold capitalize text-white">
                           {item.agent}
                         </span>
                         <span className="text-xs text-[#808080]">
                           {new Date(item.timestamp).toLocaleString()}
                         </span>
                       </div>
-                      <p className={`text-sm ${
-                        item.agent === 'researcher' || item.agent === 'copywriter' || item.agent === 'editor'
-                          ? 'text-black'
-                          : 'text-white'
-                      }`}>{item.message}</p>
-                      {item.details && (
-                        <p className="text-xs text-[#808080] mt-2 font-mono bg-[#1a1a1a] p-2 rounded">
+                      <p className="text-sm text-white">{item.message}</p>
+                      {/* {item.details && (
+                        <p className="text-xs text-[#808080] mt-2 font-mono bg-[#1a1a1a] p-2">
                           {typeof item.details === 'string' ? item.details : JSON.stringify(item.details)}
                         </p>
-                      )}
+                      )} */}
+                      </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

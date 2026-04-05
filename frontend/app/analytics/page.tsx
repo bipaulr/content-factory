@@ -50,7 +50,7 @@ function AnalyticsContent() {
         <Navigation />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00d4ff]" />
+            <div className="animate-spin h-8 w-8 border-b-2 border-[#00d4ff]" />
           </div>
         </main>
       </div>
@@ -152,9 +152,9 @@ function AnalyticsContent() {
             <section className="mb-8">
               <h2 className="text-xl font-semibold text-white mb-4">Regeneration Stats</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+                <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#00d4ff]/10 flex items-center justify-center">
+                    <div className="w-10 h-10 bg-[#00d4ff]/10 flex items-center justify-center">
                       <svg className="w-5 h-5 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                       </svg>
@@ -165,9 +165,9 @@ function AnalyticsContent() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+                <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#3a86ff]/10 flex items-center justify-center">
+                    <div className="w-10 h-10 bg-[#3a86ff]/10 flex items-center justify-center">
                       <svg className="w-5 h-5 text-[#3a86ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                       </svg>
@@ -178,9 +178,9 @@ function AnalyticsContent() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+                <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#8338ec]/10 flex items-center justify-center">
+                    <div className="w-10 h-10 bg-[#8338ec]/10 flex items-center justify-center">
                       <svg className="w-5 h-5 text-[#8338ec]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
@@ -191,9 +191,9 @@ function AnalyticsContent() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-[#252525] rounded-lg border border-[#3a3a3a] p-6">
+                <div className="bg-[#1e2021] border border-[#3a3a3a] p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#ffd60a]/10 flex items-center justify-center">
+                    <div className="w-10 h-10 bg-[#ffd60a]/10 flex items-center justify-center">
                       <svg className="w-5 h-5 text-[#ffd60a]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
@@ -219,14 +219,14 @@ function AnalyticsContent() {
           </div>
 
           {recentCampaigns.length === 0 ? (
-            <div className="text-center py-12 bg-[#1a1a1a] rounded-lg border border-[#3a3a3a]">
+            <div className="text-center py-12 bg-[#1a1a1a] border border-[#3a3a3a]">
               <p className="text-[#808080] mb-4">No campaigns yet. Create one to get started.</p>
               <Link href="/campaign/new">
                 <GradientButton variant="primary">Create Campaign</GradientButton>
               </Link>
             </div>
           ) : (
-            <div className="bg-[#1a1a1a] rounded-lg border border-[#3a3a3a] overflow-hidden">
+            <div className="bg-[#1a1a1a] border border-[#3a3a3a] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -242,7 +242,7 @@ function AnalyticsContent() {
                     {recentCampaigns.map((campaign) => (
                       <tr
                         key={campaign.campaign_id}
-                        className="border-b border-[#3a3a3a] last:border-b-0 hover:bg-[#252525] transition-colors"
+                        className="border-b border-[#3a3a3a] last:border-b-0 hover:bg-[#1e2021] transition-colors"
                       >
                         <td className="px-4 py-3">
                           <code className="text-sm text-[#00d4ff] font-mono">

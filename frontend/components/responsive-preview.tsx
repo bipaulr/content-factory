@@ -30,7 +30,7 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
             <span>{new Date().toLocaleDateString()}</span>
           </div>
         </div>
-        <div className="h-48 bg-gradient-to-r from-[#00d4ff] to-[#06E796] rounded-lg mb-6"></div>
+        <div className="h-48 bg-gradient-to-r from-[#00d4ff] to-[#06E796] mb-6"></div>
         <article className="prose prose-invert max-w-none space-y-2">
           {formatted.map((el, idx) => {
             switch (el.type) {
@@ -80,9 +80,9 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
     return (
       <div className="space-y-4">
         {posts.map((post) => (
-          <div key={`post-${post.number}`} className="border border-[#3a3a3a] rounded-2xl p-4 hover:bg-[#0a0a0a]/50 transition">
+          <div key={`post-${post.number}`} className="border border-[#3a3a3a] p-4 hover:bg-[#0a0a0a]/50 transition">
             <div className="flex items-start gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#00d4ff] to-[#06E796]"></div>
+              <div className="w-10 h-10 bg-gradient-to-r from-[#00d4ff] to-[#06E796]"></div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-white">Content Factory</span>
@@ -123,11 +123,11 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
     const formatted = formatMarkdownContent(content);
     return (
       <div className="space-y-4">
-        <div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded p-4">
+        <div className="bg-[#1a1a1a] border border-[#3a3a3a] p-4">
           <p className="text-[#808080] text-sm mb-3">From: campaigns@contentfactory.io</p>
           <p className="text-[#808080] text-sm mb-4">Subject: {title}</p>
         </div>
-        <div className="bg-white text-[#0a0a0a] rounded p-6 space-y-3">
+        <div className="bg-white text-[#0a0a0a] p-6 space-y-3">
           <article className="font-sans text-sm leading-relaxed">
             {formatted.map((el, idx) => {
               switch (el.type) {
@@ -169,7 +169,7 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
             })}
           </article>
           <div className="pt-4 border-t border-gray-300">
-            <button className="bg-[#00d4ff] text-[#0a0a0a] px-6 py-2 rounded-lg font-semibold hover:brightness-110">
+            <button className="bg-[#00d4ff] text-[#0a0a0a] px-6 py-2 font-semibold hover:brightness-110">
               View Full Campaign
             </button>
           </div>
@@ -196,11 +196,11 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
       {/* Device Toggle */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-white">{title} Preview</h3>
-        <div className="flex gap-2 bg-[#1a1a1a] rounded-lg p-1">
+        <div className="flex gap-2 bg-[#1a1a1a] p-1">
           <button
             onClick={() => setDevice('mobile')}
             className={cn(
-              'px-4 py-2 rounded text-sm font-medium transition-all',
+              'px-4 py-2 text-sm font-medium transition-all',
               device === 'mobile'
                 ? 'bg-[#00d4ff] text-[#0a0a0a]'
                 : 'text-[#808080] hover:text-white'
@@ -211,7 +211,7 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
           <button
             onClick={() => setDevice('desktop')}
             className={cn(
-              'px-4 py-2 rounded text-sm font-medium transition-all',
+              'px-4 py-2 text-sm font-medium transition-all',
               device === 'desktop'
                 ? 'bg-[#00d4ff] text-[#0a0a0a]'
                 : 'text-[#808080] hover:text-white'
@@ -228,10 +228,10 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
           // Mobile Preview
           <div className="w-full max-w-sm">
             {/* Phone Frame */}
-            <div className="bg-black rounded-3xl border-8 border-gray-800 shadow-2xl overflow-hidden">
+            <div className="bg-black border-8 border-gray-800 shadow-2xl overflow-hidden">
               {/* Phone Notch */}
               <div className="bg-black h-6 flex justify-center items-center">
-                <div className="w-32 h-5 bg-black rounded-b-2xl"></div>
+                <div className="w-32 h-5 bg-black"></div>
               </div>
 
               {/* Phone Status Bar */}
@@ -254,13 +254,13 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
           // Desktop Preview
           <div className="w-full">
             {/* Browser Frame */}
-            <div className="bg-[#252525] rounded-lg border-2 border-[#3a3a3a] shadow-2xl overflow-hidden">
+            <div className="bg-[#1e2021] border-2 border-[#3a3a3a] shadow-2xl overflow-hidden">
               {/* Browser Toolbar */}
               <div className="bg-[#1a1a1a] px-4 py-3 flex items-center gap-3 border-b border-[#3a3a3a]">
                 <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#ff6058]"></div>
-                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
-                  <div className="w-3 h-3 rounded-full bg-[#28c940]"></div>
+                  <div className="w-3 h-3 bg-[#ff6058]"></div>
+                  <div className="w-3 h-3 bg-[#ffbd2e]"></div>
+                  <div className="w-3 h-3 bg-[#28c940]"></div>
                 </div>
                 <div className="flex-1 ml-4 text-[#808080] text-xs">
                   {type === 'blog' ? 'blogsample.com' : type === 'social' ? 'twitter.com/home' : 'email-preview'}
@@ -270,7 +270,7 @@ export function ResponsivePreview({ content, title, type, className }: Responsiv
               {/* Content Area */}
               <div className="bg-[#0a0a0a] p-8">
                 <div className={cn(
-                  'rounded bg-[#1a1a1a] p-8 min-h-[500px]',
+                  'bg-[#1a1a1a] p-8 min-h-[500px]',
                   type === 'blog' && 'max-w-3xl mx-auto',
                   type === 'social' && 'max-w-2xl mx-auto'
                 )}>

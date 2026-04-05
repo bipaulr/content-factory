@@ -143,7 +143,6 @@
   right: -2px;
   bottom: -2px;
   background: linear-gradient(135deg, #FFA7A7, #F7D15E, #0EBDF6, #06E796);
-  border-radius: 0.5rem;
   z-index: -1;
   transition: opacity 0.3s ease;
 }
@@ -162,7 +161,6 @@
 .btn-outline-hover {
   position: relative;
   border: 2px solid #666666 !important;
-  border-radius: 0.5rem !important;
   background: transparent !important;
   transition: all 0.3s ease;
   overflow: visible;

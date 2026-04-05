@@ -54,7 +54,7 @@ export function MetricCard({ label, value, variant = 'cyan', icon, className }: 
   return (
     <div
       className={cn(
-        "p-6 rounded-lg border transition-all duration-300 hover:scale-[1.02]",
+        "p-6 border transition-all duration-300 hover:scale-[1.02]",
         styles.bg,
         styles.border,
         className
@@ -66,7 +66,7 @@ export function MetricCard({ label, value, variant = 'cyan', icon, className }: 
           <p className={cn("text-3xl font-bold", styles.text)}>{value}</p>
         </div>
         {icon && (
-          <div className={cn("p-2 rounded-lg", styles.bg, styles.text)}>
+          <div className={cn("p-2", styles.bg, styles.text)}>
             {icon}
           </div>
         )}
