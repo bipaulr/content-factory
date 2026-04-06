@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { checkHealth } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useSession, signOut } from 'next-auth/react';
 
 const navItems = [
   { href: '/', label: 'Dashboard' },
@@ -15,8 +16,10 @@ const navItems = [
 
 export function Navigation() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [isConnected, setIsConnected] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -44,53 +47,81 @@ export function Navigation() {
           <Link href="/" className="flex items-center gap-3">
             
             <span className="font-bold text-lg text-white">cofy.</span>
-            {/* <div className="flex items-center gap-1.5 ml-2">
-              <div className={cn(
-                "w-2 h-2 transition-colors",
-                isConnected ? "bg-[#06ffa5]" : "bg-[#ff006e]"
-              )} />
-              <span className="text-xs text-[#808080]">
-                {isConnected ? 'Connected' : 'Disconnected'}
-              </span>
-            </div> */}
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || 
-                (item.href !== '/' && pathname.startsWith(item.href));
-              
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "py-2 text-sm font-medium transition-all duration-200",
-                    isActive
-                      ? "text-white border-b-2 border-white"
-                      : "text-[#b0b0b0] hover:text-white"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
+          {/* Right Side: Desktop Navigation + Profile Picture + Mobile Menu */}
+          <div className="flex items-center gap-8">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-8">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href || 
+                  (item.href !== '/' && pathname.startsWith(item.href));
+                
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "py-2 text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "text-white border-b-2 border-white"
+                        : "text-[#b0b0b0] hover:text-white"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-[#b0b0b0] hover:text-white"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+            {/* Profile Picture Dropdown */}
+            {session?.user?.image && (
+              <div className="relative">
+                <button
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="relative p-0.5 rounded-full hover:opacity-80 transition-opacity"
+                >
+                  <img
+                    src={session.user.image}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                </button>
+
+                {/* Dropdown Menu */}
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-[#1a1a1a] border border-[#3a3a3a] rounded-md shadow-lg py-1 z-50">
+                    <div className="px-4 py-2 border-b border-[#3a3a3a]">
+                      <p className="text-sm text-white truncate">{session.user.email}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        signOut({ redirect: true, callbackUrl: '/login' });
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-[#b0b0b0] hover:text-white hover:bg-[#2a2a2a] transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2 text-[#b0b0b0] hover:text-white"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}

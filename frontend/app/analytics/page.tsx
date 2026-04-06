@@ -84,7 +84,7 @@ function AnalyticsContent() {
             {/* Key Metrics */}
             <section className="mb-8">
               <h2 className="text-xl font-semibold text-white mb-4">Key Metrics</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard
                   label="Total Campaigns"
                   value={analytics.total_campaigns}
@@ -125,7 +125,7 @@ function AnalyticsContent() {
                     </svg>
                   }
                 />
-                <MetricCard
+                {/* <MetricCard
                   label="Avg. Time"
                   value={`${(analytics.avg_completion_time_seconds ?? 0).toFixed(1)}s`}
                   variant="orange"
@@ -144,7 +144,7 @@ function AnalyticsContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                   }
-                />
+                /> */}
               </div>
             </section>
 

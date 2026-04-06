@@ -1,27 +1,59 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from pydantic import BaseModel
+from typing import Optional
 from agents.researcher import run_researcher
 from agents.copywriter import run_copywriter, run_copywriter_with_feedback, run_copywriter_blog_only, run_copywriter_social_only, run_copywriter_email_only
 from agents.editor import run_editor
 from agents.campaign_tracker import CampaignTracker, generate_campaign_id
+from models.user import UserDatabase
+from auth import AuthManager
 import requests
 from bs4 import BeautifulSoup
 import json
 import asyncio
 import zipfile
 import io
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="Content Factory API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", os.getenv("FRONTEND_URL", "http://localhost:3000")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security
+def get_current_user(authorization: Optional[str] = Header(None)):
+    """Verify JWT token and return current user"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing authorization header")
+    
+    # Extract token from "Bearer <token>"
+    try:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=401, detail="Invalid authorization scheme")
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid authorization header format")
+    
+    payload = AuthManager.verify_token(token)
+    
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    user = UserDatabase.get_user_by_id(payload.get("user_id"))
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    return user
 
 class SourceInput(BaseModel):
     text: str
@@ -697,3 +729,152 @@ def get_analytics():
         "avg_revisions": round(avg_revisions, 2),
         "campaigns": campaigns
     }
+
+
+# ==================== AUTHENTICATION ENDPOINTS ====================
+
+class GoogleAuthRequest(BaseModel):
+    code: str
+    redirect_uri: str
+
+class UserLoginRequest(BaseModel):
+    email: str
+    name: str
+    google_id: str
+    image_url: Optional[str] = None  # Google profile picture URL
+
+@app.post("/api/auth/google-callback")
+def google_callback(request: UserLoginRequest):
+    """Handle user creation/login after Google OAuth with profile picture"""
+    try:
+        # Try MongoDB first if available
+        try:
+            from config.database import USE_MONGODB
+            from models.mongodb_user import MongoUser
+            
+            if USE_MONGODB:
+                user_obj = MongoUser.create_or_update_from_google(
+                    google_id=request.google_id,
+                    email=request.email,
+                    name=request.name,
+                    profile_picture_url=request.image_url
+                )
+                user_data = user_obj.to_dict()
+                user_id = user_obj.user_id
+            else:
+                raise ImportError("Not using MongoDB")
+        except (ImportError, Exception):
+            # Fall back to SQLite
+            user = UserDatabase.create_or_update_user(
+                google_id=request.google_id,
+                email=request.email,
+                name=request.name,
+                image_url=request.image_url
+            )
+            user_data = user.to_dict()
+            user_id = user.user_id
+        
+        # Create JWT token for the user
+        jwt_token = AuthManager.create_token(user_id)
+        
+        return {
+            "token": jwt_token,
+            "user": user_data,
+            "expiresIn": 24 * 60 * 60  # 24 hours in seconds
+        }
+    
+    except Exception as e:
+        print(f"Google callback error: {e}")
+        raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+
+
+@app.post("/api/auth/google")
+def google_auth(request: GoogleAuthRequest):
+    """Handle Google OAuth callback and create/update user (legacy endpoint)"""
+    try:
+        # Exchange authorization code for tokens
+        token_data = AuthManager.exchange_code_for_token(request.code, request.redirect_uri)
+        
+        if not token_data:
+            raise HTTPException(status_code=400, detail="Failed to exchange code for tokens")
+        
+        # Get user info from Google using access token
+        access_token = token_data.get("access_token")
+        user_info = AuthManager.get_user_info_from_google_token(access_token)
+        
+        if not user_info:
+            raise HTTPException(status_code=400, detail="Failed to get user information from Google")
+        
+        # Create or update user in database
+        user = UserDatabase.create_or_update_user(
+            google_id=user_info.get("google_id"),
+            email=user_info.get("email"),
+            name=user_info.get("name"),
+            image_url=user_info.get("image_url")
+        )
+        
+        # Create JWT token for the user
+        jwt_token = AuthManager.create_token(user.user_id)
+        
+        return {
+            "token": jwt_token,
+            "user": user.to_dict(),
+            "expiresIn": 24 * 60 * 60  # 24 hours in seconds
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Google auth error: {e}")
+        raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+
+
+@app.get("/api/auth/me")
+def get_current_user_info(current_user = Depends(get_current_user)):
+    """Get current authenticated user info"""
+    return current_user.to_dict()
+
+
+@app.post("/api/auth/logout")
+def logout():
+    """Logout endpoint (mostly for frontend to clear tokens)"""
+    return {"message": "Logged out successfully"}
+
+
+@app.get("/api/auth/verify")
+def verify_token(current_user = Depends(get_current_user)):
+    """Verify if the current token is valid"""
+    return {
+        "valid": True,
+        "user": current_user.to_dict()
+    }
+
+
+@app.get("/api/auth/user/{user_id}")
+def get_user(user_id: str):
+    """Get user data by ID (includes profile picture and other metadata)"""
+    try:
+        # Try MongoDB first if available
+        try:
+            from config.database import USE_MONGODB
+            from models.mongodb_user import MongoUser
+            
+            if USE_MONGODB:
+                user = MongoUser.get_by_id(user_id)
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+                return user.to_dict()
+        except (ImportError, Exception):
+            pass
+        
+        # Fall back to SQLite
+        user = UserDatabase.get_user_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user.to_dict()
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error fetching user: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch user")
