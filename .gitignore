@@ -48,6 +48,8 @@ campaigns/
 !frontend/package.json
 !package-lock.json
 !frontend/package-lock.json
+!tsconfig.json
+!frontend/tsconfig.json
 *.json
 .env
 .env.local
