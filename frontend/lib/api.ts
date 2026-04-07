@@ -20,10 +20,20 @@ api.interceptors.request.use(
 
         if (session?.user?.backendToken) {
           config.headers.Authorization = `Bearer ${session.user.backendToken}`;
+          return config;
         }
       }
     } catch (error) {
-      // Ignore errors (no session, etc.)
+      // Session fetch failed, fall through to check localStorage
+    }
+
+    // Check for local auth token in localStorage
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        return config;
+      }
     }
 
     return config;
