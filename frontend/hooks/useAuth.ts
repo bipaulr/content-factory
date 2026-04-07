@@ -26,21 +26,25 @@ export function useProtectAuthPages(isAuthPage: boolean = false) {
 
 /**
  * Hook to protect routes that require authentication
- * Usage: useRequireAuth() - redirects to login if not authenticated
+ * Usage: const { isAuthenticated, loading } = useRequireAuth()
+ * Returns both auth state and loading state to prevent requests during auth transitions
  */
 export function useRequireAuth() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { localUser, loading } = useLocalAuth();
+  const { localUser, loading: localLoading } = useLocalAuth();
   
   const isAuthenticated = !!session?.user || !!localUser;
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!localLoading && !isAuthenticated) {
       // Redirect to login if user is not authenticated
       router.push('/login');
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, localLoading, router]);
 
-  return isAuthenticated;
+  return {
+    isAuthenticated,
+    loading: localLoading
+  };
 }

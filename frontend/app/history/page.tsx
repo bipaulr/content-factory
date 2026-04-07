@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Navigation } from '@/components/navigation';
 import { GradientButton } from '@/components/gradient-button';
@@ -8,31 +9,59 @@ import { StatusBadge } from '@/components/status-badge';
 import { ToastProvider } from '@/components/toast-provider';
 import { getCampaigns, type Campaign } from '@/lib/api';
 import type { CampaignStatus } from '@/lib/types';
+import { useRequireAuth } from '@/hooks/useAuth';
+import { useLocalAuth } from '@/providers/auth-provider';
 
 type SortField = 'created_at' | 'status' | 'duration';
 type SortDirection = 'asc' | 'desc';
 
 export default function HistoryPage() {
+  const { isAuthenticated, loading: authLoading } = useRequireAuth();
+  const { data: session } = useSession();
+  const { localUser } = useLocalAuth();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all');
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
+  // Get a user identifier to detect user changes
+  const userIdentifier = session?.user?.email || localUser?.email;
+
   useEffect(() => {
+    if (authLoading || !isAuthenticated) {
+      return;
+    }
+
+    // Reset state when user changes
+    setCampaigns([]);
+    setLoading(true);
+
+    const abortController = new AbortController();
+
     const loadCampaigns = async () => {
       try {
         const data = await getCampaigns();
-        setCampaigns(data);
+        if (!abortController.signal.aborted) {
+          setCampaigns(data);
+        }
       } catch (error) {
-        console.log('[v Error loading campaigns:', error);
+        if (!abortController.signal.aborted) {
+          console.log('[v Error loading campaigns:', error);
+        }
       } finally {
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     loadCampaigns();
-  }, []);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [isAuthenticated, authLoading, userIdentifier]);
 
   const filteredAndSortedCampaigns = useMemo(() => {
     let result = [...campaigns];

@@ -55,6 +55,8 @@ export function Navigation() {
     if (localUser) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
+      // Dispatch logout event so AuthProvider updates
+      window.dispatchEvent(new Event('logout'));
       router.push('/login');
       return;
     }
@@ -108,9 +110,9 @@ export function Navigation() {
                   title={user.email || user.name}
                 >
                   <Avatar 
-                    name={user.name} 
-                    email={user.email} 
-                    image={(user as any).image || (user as any).image_url}
+                    name={user.name || ''} 
+                    email={user.email || ''} 
+                    image={user.image || (user as any).image_url || undefined}
                     size="md"
                   />
                 </button>
@@ -122,9 +124,9 @@ export function Navigation() {
                     <div className="px-4 py-3 border-b border-[#3a3a3a]">
                       <div className="flex items-center gap-3">
                         <Avatar 
-                          name={user.name} 
-                          email={user.email} 
-                          image={(user as any).image || (user as any).image_url}
+                          name={user.name || ''} 
+                          email={user.email || ''} 
+                          image={user.image || (user as any).image_url || undefined}
                           size="lg"
                         />
                         <div className="flex-1 min-w-0">

@@ -50,6 +50,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     setLoading(false);
+
+    // Listen for storage changes (logout from another tab or explicit clear)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth_token' || e.key === 'user') {
+        const newToken = localStorage.getItem('auth_token');
+        const newUserStr = localStorage.getItem('user');
+        
+        if (!newToken || !newUserStr) {
+          setLocalUser(null);
+        }
+      }
+    };
+
+    // Also listen for custom logout event
+    const handleLogout = () => {
+      setLocalUser(null);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('logout', handleLogout);
+    };
   }, []);
 
   return (

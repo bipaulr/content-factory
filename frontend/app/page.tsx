@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { FaSearch, FaEdit, FaCheck, FaFileExport } from 'react-icons/fa';
 import { Navigation } from '@/components/navigation';
 import { GradientButton } from '@/components/gradient-button';
@@ -9,6 +10,8 @@ import { MetricCard } from '@/components/metric-card';
 import { StatusBadge } from '@/components/status-badge';
 import { ToastProvider } from '@/components/toast-provider';
 import { getCampaigns, getAnalytics, type Campaign, type Analytics } from '@/lib/api';
+import { useRequireAuth } from '@/hooks/useAuth';
+import { useLocalAuth } from '@/providers/auth-provider';
 
 const features = [
   {
@@ -76,28 +79,56 @@ const colorClasses: Record<string, { bg: string; border: string; text: string }>
 };
 
 export default function DashboardPage() {
+  const { isAuthenticated, loading: authLoading } = useRequireAuth(); // Protects this route, redirects if not logged in
+  const { data: session } = useSession();
+  const { localUser } = useLocalAuth();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Get a user identifier to detect user changes
+  const userIdentifier = session?.user?.email || localUser?.email;
+
   useEffect(() => {
+    // Only fetch data if user is authenticated and auth is done loading
+    if (authLoading || !isAuthenticated) {
+      return;
+    }
+
+    // Reset state when user changes
+    setCampaigns([]);
+    setAnalytics(null);
+    setLoading(true);
+
+    const abortController = new AbortController();
+
     const loadData = async () => {
       try {
         const [campaignsData, analyticsData] = await Promise.all([
           getCampaigns(),
           getAnalytics(),
         ]);
-        setCampaigns(campaignsData.slice(0, 5));
-        setAnalytics(analyticsData);
+        if (!abortController.signal.aborted) {
+          setCampaigns(campaignsData.slice(0, 5));
+          setAnalytics(analyticsData);
+        }
       } catch (error) {
-        console.log('Error loading dashboard data:', error);
+        if (!abortController.signal.aborted) {
+          console.log('Error loading dashboard data:', error);
+        }
       } finally {
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     loadData();
-  }, []);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [isAuthenticated, authLoading, userIdentifier]);
 
   return (
     <ToastProvider>
@@ -128,7 +159,7 @@ export default function DashboardPage() {
           </section>
 
           {/* Quick Stats */}
-          {analytics && (
+          {/* {analytics && (
             <section className="grid grid-cols-2 pt-5 md:grid-cols-4 gap-4 mb-12">
               <MetricCard
                 label="Total Campaigns"
@@ -151,7 +182,7 @@ export default function DashboardPage() {
                 variant="pink"
               />
             </section>
-          )}
+          )} */}
 
           {/* Features Grid */}
           <section className="mb-12">

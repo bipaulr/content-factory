@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Navigation } from '@/components/navigation';
 import { GradientButton } from '@/components/gradient-button';
@@ -8,15 +9,23 @@ import { MetricCard } from '@/components/metric-card';
 import { StatusBadge } from '@/components/status-badge';
 import { ToastProvider, useToast } from '@/components/toast-provider';
 import { getAnalytics, getCampaigns, type Analytics, type Campaign } from '@/lib/api';
+import { useRequireAuth } from '@/hooks/useAuth';
+import { useLocalAuth } from '@/providers/auth-provider';
 
 function AnalyticsContent() {
+  const { isAuthenticated, loading: authLoading } = useRequireAuth();
+  const { data: session } = useSession();
+  const { localUser } = useLocalAuth();
   const { showToast } = useToast();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadData = async () => {
+  // Get a user identifier to detect user changes
+  const userIdentifier = session?.user?.email || localUser?.email;
+
+  const loadDataAsync = async (isRefresh: boolean = false) => {
     try {
       const [analyticsData, campaignsData] = await Promise.all([
         getAnalytics(),
@@ -26,7 +35,9 @@ function AnalyticsContent() {
       setRecentCampaigns(campaignsData.slice(0, 5));
     } catch (error) {
       console.log('Error loading analytics:', error);
-      showToast('error', 'Failed to load analytics data.');
+      if (isRefresh) {
+        showToast('error', 'Failed to refresh analytics data.');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -34,14 +45,51 @@ function AnalyticsContent() {
   };
 
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (authLoading || !isAuthenticated) {
+      return;
+    }
 
-  const handleRefresh = () => {
+    // Reset state when user changes
+    setAnalytics(null);
+    setRecentCampaigns([]);
+    setLoading(true);
+
+    const abortController = new AbortController();
+
+    const loadDataSafely = async () => {
+      try {
+        const [analyticsData, campaignsData] = await Promise.all([
+          getAnalytics(),
+          getCampaigns(),
+        ]);
+        if (!abortController.signal.aborted) {
+          setAnalytics(analyticsData);
+          setRecentCampaigns(campaignsData.slice(0, 5));
+        }
+      } catch (error) {
+        if (!abortController.signal.aborted) {
+          console.log('Error loading analytics:', error);
+          showToast('error', 'Failed to load analytics data.');
+        }
+      } finally {
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      }
+    };
+
+    loadDataSafely();
+    
+    return () => {
+      abortController.abort();
+    };
+  }, [isAuthenticated, authLoading, userIdentifier, showToast]);
+
+  const handleRefresh = async () => {
     setRefreshing(true);
-    loadData();
-    showToast('info', 'Refreshing analytics...');
+    await loadDataAsync(true);
+    showToast('info', 'Analytics refreshed!');
   };
 
   if (loading) {

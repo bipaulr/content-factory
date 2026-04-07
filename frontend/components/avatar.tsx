@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 interface AvatarProps {
   name?: string;
@@ -11,19 +11,22 @@ interface AvatarProps {
 }
 
 export function Avatar({ name, email, image, size = 'md', className = '' }: AvatarProps) {
+  const [imageError, setImageError] = useState(false);
+  
   const sizeClasses = {
     sm: 'w-6 h-6 text-xs',
     md: 'w-8 h-8 text-sm',
     lg: 'w-10 h-10 text-base',
   };
 
-  // If there's an image, show it
-  if (image) {
+  // If there's a valid image and no error, show it
+  if (image && !imageError) {
     return (
       <img
         src={image}
         alt={name || email || 'User'}
         className={`rounded-full object-cover ${sizeClasses[size]} ${className}`}
+        onError={() => setImageError(true)}
       />
     );
   }
