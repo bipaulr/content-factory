@@ -8,15 +8,17 @@ from pathlib import Path
 class CampaignTracker:
     """Handles saving and loading campaign data to/from JSON files"""
     
-    def __init__(self, campaign_id: str, source_text: str):
+    def __init__(self, campaign_id: str, source_text: str, user_id: str = None):
         self.campaign_id = campaign_id
         self.source_text = source_text
+        self.user_id = user_id
         self.campaigns_dir = Path("campaigns")
         self.campaigns_dir.mkdir(exist_ok=True)
         
         # Initialize campaign data structure
         self.campaign_data = {
             "id": campaign_id,
+            "user_id": user_id,  # Store user_id to isolate campaigns per user
             "created_at": datetime.now().isoformat(),
             "source_text": source_text,
             "fact_sheet": None,
@@ -183,8 +185,8 @@ class CampaignTracker:
         return tracker
     
     @staticmethod
-    def list_all(limit: int = None) -> list:
-        """List all campaigns, newest first"""
+    def list_all(limit: int = None, user_id: str = None) -> list:
+        """List all campaigns (optionally filtered by user_id), newest first"""
         campaigns_dir = Path("campaigns")
         if not campaigns_dir.exists():
             return []
@@ -197,7 +199,9 @@ class CampaignTracker:
         for campaign_file in campaign_files:
             with open(campaign_file, "r") as f:
                 data = json.load(f)
-                campaigns.append(data)
+                # Filter by user_id if provided
+                if user_id is None or data.get("user_id") == user_id:
+                    campaigns.append(data)
         
         return campaigns
 

@@ -321,20 +321,45 @@ function AnimatedCharactersLoginPage() {
     setError("");
     setIsLoading(true);
 
-    // Simulate API delay (quick)
-    await new Promise(resolve => setTimeout(resolve, 300));
+    try {
+      // Validate inputs
+      if (!email.trim() || !password.trim()) {
+        setError("Please enter your email and password");
+        setIsLoading(false);
+        return;
+      }
 
-    // Mock authentication - validate against dummy credentials
-    if (email === "erik@gmail.com" && password === "1234") {
-      console.log("✅ Login successful!");
-      // In a real app, you would use your backend auth
+      // Call backend login API
+      const response = await fetch("http://localhost:8000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.detail || "Invalid email or password. Please try again.");
+        return;
+      }
+
+      // Store JWT token securely (localStorage for now, httpOnly cookies recommended for production)
+      localStorage.setItem("auth_token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect to dashboard
       router.push("/");
-    } else {
-      setError("Invalid email or password. Please try again.");
-      console.log("❌ Login failed");
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Network error. Please check your connection and try again.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   const handleGoogleSignIn = async () => {

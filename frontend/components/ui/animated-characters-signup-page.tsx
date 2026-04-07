@@ -315,16 +315,34 @@ function AnimatedCharactersSignupPage() {
       setError("Please enter your full name");
       return false;
     }
+    if (fullName.trim().length > 100) {
+      setError("Name is too long");
+      return false;
+    }
     if (!email.trim()) {
       setError("Please enter your email");
       return false;
     }
-    if (!password) {
-      setError("Please enter a password");
+    // Basic email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.trim())) {
+      setError("Please enter a valid email");
       return false;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return false;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter");
+      return false;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError("Password must contain at least one lowercase letter");
+      return false;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError("Password must contain at least one digit");
       return false;
     }
     if (password !== confirmPassword) {
@@ -345,20 +363,35 @@ function AnimatedCharactersSignupPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Call backend signup API
+      const response = await fetch("http://localhost:8000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password: password,
+          fullName: fullName.trim(),
+        }),
+      });
 
-      // Mock user creation - in real app, call backend endpoint
-      console.log("✅ Signup successful!", { fullName, email });
+      const data = await response.json();
 
-      // Store user data temporarily (would use real auth)
-      localStorage.setItem("user", JSON.stringify({ fullName, email }));
+      if (!response.ok) {
+        setError(data.detail || "Signup failed. Please try again.");
+        return;
+      }
 
-      // Redirect to dashboard or login
+      // Store JWT token securely (localStorage for now, httpOnly cookies recommended for production)
+      localStorage.setItem("auth_token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect to dashboard
       router.push("/");
     } catch (err) {
-      setError("Signup failed. Please try again.");
-      console.error(err);
+      console.error("Signup error:", err);
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -600,7 +633,7 @@ function AnimatedCharactersSignupPage() {
               <Input
                 id="fullName"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Paul Ranjith"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 onFocus={() => setIsTyping(true)}
@@ -617,7 +650,7 @@ function AnimatedCharactersSignupPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="john@example.com"
+                placeholder="paul@gmail.com"
                 value={email}
                 autoComplete="off"
                 onChange={(e) => setEmail(e.target.value)}

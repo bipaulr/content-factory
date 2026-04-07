@@ -218,13 +218,13 @@ def run_pipeline_background(campaign_id: str, source_text: str):
 
 
 @app.post("/api/run-pipeline-async")
-def run_pipeline_async(input: SourceInput, background_tasks: BackgroundTasks):
+def run_pipeline_async(input: SourceInput, background_tasks: BackgroundTasks, current_user = Depends(get_current_user)):
     """Run pipeline in background and return campaign_id immediately"""
     # Generate unique campaign ID
     campaign_id = generate_campaign_id()
     
-    # Create tracker and initialize campaign
-    tracker = CampaignTracker(campaign_id, input.text)
+    # Create tracker with user_id for campaign isolation
+    tracker = CampaignTracker(campaign_id, input.text, user_id=current_user.user_id)
     tracker.save()  # Explicitly save
     
     # Start background task
@@ -239,7 +239,7 @@ def run_pipeline_async(input: SourceInput, background_tasks: BackgroundTasks):
 
 
 @app.post("/api/run-pipeline-async-file")
-async def run_pipeline_async_file(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def run_pipeline_async_file(background_tasks: BackgroundTasks, file: UploadFile = File(...), current_user = Depends(get_current_user)):
     """Run pipeline asynchronously with uploaded file"""
     try:
         contents = await file.read()
@@ -248,8 +248,8 @@ async def run_pipeline_async_file(background_tasks: BackgroundTasks, file: Uploa
         # Generate unique campaign ID
         campaign_id = generate_campaign_id()
         
-        # Create tracker and initialize campaign
-        tracker = CampaignTracker(campaign_id, text)
+        # Create tracker with user_id for campaign isolation
+        tracker = CampaignTracker(campaign_id, text, user_id=current_user.user_id)
         tracker.save()  # Explicitly save
         
         # Start background task
@@ -268,7 +268,7 @@ async def run_pipeline_async_file(background_tasks: BackgroundTasks, file: Uploa
 
 
 @app.post("/api/run-pipeline-async-url")
-def run_pipeline_async_url(input: UrlInput, background_tasks: BackgroundTasks):
+def run_pipeline_async_url(input: UrlInput, background_tasks: BackgroundTasks, current_user = Depends(get_current_user)):
     """Run pipeline asynchronously with URL content"""
     try:
         # Fetch and parse URL with browser user agent to avoid 403 errors
@@ -298,8 +298,8 @@ def run_pipeline_async_url(input: UrlInput, background_tasks: BackgroundTasks):
         # Generate unique campaign ID
         campaign_id = generate_campaign_id()
         
-        # Create tracker and initialize campaign
-        tracker = CampaignTracker(campaign_id, text)
+        # Create tracker with user_id for campaign isolation
+        tracker = CampaignTracker(campaign_id, text, user_id=current_user.user_id)
         tracker.save()  # Explicitly save
         
         # Start background task
@@ -322,9 +322,10 @@ def run_pipeline_async_url(input: UrlInput, background_tasks: BackgroundTasks):
 
 
 @app.get("/api/campaigns")
-def get_campaigns():
-    """Get list of all campaigns"""
-    campaigns_data = CampaignTracker.list_all()
+def get_campaigns(current_user = Depends(get_current_user)):
+    """Get list of all campaigns for current authenticated user"""
+    # Get only campaigns for the current user
+    campaigns_data = CampaignTracker.list_all(user_id=current_user.user_id)
     
     # Enrich campaign data with campaign_id and duration
     for campaign in campaigns_data:
@@ -346,12 +347,16 @@ def get_campaigns():
 
 
 @app.get("/api/campaigns/{campaign_id}")
-def get_campaign(campaign_id: str):
-    """Get a specific campaign by ID"""
+def get_campaign(campaign_id: str, current_user = Depends(get_current_user)):
+    """Get a specific campaign by ID - only if it belongs to current user"""
     tracker = CampaignTracker.load(campaign_id)
     
     if not tracker:
         return {"error": "Campaign not found"}, 404
+    
+    # Verify ownership - campaign must belong to current user
+    if tracker.campaign_data.get("user_id") != current_user.user_id:
+        return {"error": "Access denied - campaign belongs to another user"}, 403
     
     campaign = tracker.campaign_data.copy()
     
@@ -397,12 +402,16 @@ def get_campaign(campaign_id: str):
 
 
 @app.get("/api/campaigns/{campaign_id}/feedback-history")
-def get_feedback_history(campaign_id: str):
-    """Get the feedback/chat history for a campaign"""
+def get_feedback_history(campaign_id: str, current_user = Depends(get_current_user)):
+    """Get the feedback/chat history for a campaign - only if it belongs to current user"""
     tracker = CampaignTracker.load(campaign_id)
     
     if not tracker:
         return {"error": "Campaign not found"}, 404
+    
+    # Verify ownership
+    if tracker.campaign_data.get("user_id") != current_user.user_id:
+        return {"error": "Access denied - campaign belongs to another user"}, 403
     
     feedback_history = tracker.campaign_data.get("feedback_history", [])
     
@@ -413,12 +422,16 @@ def get_feedback_history(campaign_id: str):
 
 
 @app.post("/api/campaigns/{campaign_id}/regenerate-blog")
-def regenerate_blog(campaign_id: str):
-    """Regenerate only the blog post"""
+def regenerate_blog(campaign_id: str, current_user = Depends(get_current_user)):
+    """Regenerate only the blog post - only if campaign belongs to current user"""
     tracker = CampaignTracker.load(campaign_id)
     
     if not tracker:
         return {"error": "Campaign not found"}, 404
+    
+    # Verify ownership
+    if tracker.campaign_data.get("user_id") != current_user.user_id:
+        return {"error": "Access denied - campaign belongs to another user"}, 403
     
     fact_sheet = tracker.campaign_data.get("fact_sheet")
     if not fact_sheet:
@@ -446,12 +459,16 @@ def regenerate_blog(campaign_id: str):
 
 
 @app.post("/api/campaigns/{campaign_id}/regenerate-social")
-def regenerate_social(campaign_id: str):
-    """Regenerate only the social media thread"""
+def regenerate_social(campaign_id: str, current_user = Depends(get_current_user)):
+    """Regenerate only the social media thread - only if campaign belongs to current user"""
     tracker = CampaignTracker.load(campaign_id)
     
     if not tracker:
         return {"error": "Campaign not found"}, 404
+    
+    # Verify ownership
+    if tracker.campaign_data.get("user_id") != current_user.user_id:
+        return {"error": "Access denied - campaign belongs to another user"}, 403
     
     fact_sheet = tracker.campaign_data.get("fact_sheet")
     if not fact_sheet:
@@ -479,12 +496,16 @@ def regenerate_social(campaign_id: str):
 
 
 @app.post("/api/campaigns/{campaign_id}/regenerate-email")
-def regenerate_email(campaign_id: str):
-    """Regenerate only the email teaser"""
+def regenerate_email(campaign_id: str, current_user = Depends(get_current_user)):
+    """Regenerate only the email teaser - only if campaign belongs to current user"""
     tracker = CampaignTracker.load(campaign_id)
     
     if not tracker:
         return {"error": "Campaign not found"}, 404
+    
+    # Verify ownership
+    if tracker.campaign_data.get("user_id") != current_user.user_id:
+        return {"error": "Access denied - campaign belongs to another user"}, 403
     
     fact_sheet = tracker.campaign_data.get("fact_sheet")
     if not fact_sheet:
@@ -512,12 +533,16 @@ def regenerate_email(campaign_id: str):
 
 
 @app.get("/api/campaigns/{campaign_id}/export-clipboard")
-def export_clipboard(campaign_id: str):
-    """Get campaign data formatted for clipboard"""
+def export_clipboard(campaign_id: str, current_user = Depends(get_current_user)):
+    """Get campaign data formatted for clipboard - only if campaign belongs to current user"""
     tracker = CampaignTracker.load(campaign_id)
     
     if not tracker:
         return {"error": "Campaign not found"}, 404
+    
+    # Verify ownership
+    if tracker.campaign_data.get("user_id") != current_user.user_id:
+        return {"error": "Access denied - campaign belongs to another user"}, 403
     
     campaign = tracker.campaign_data
     content = campaign.get("content", {})
@@ -538,12 +563,16 @@ def export_clipboard(campaign_id: str):
 
 
 @app.get("/api/campaigns/{campaign_id}/export-zip")
-def export_zip(campaign_id: str):
-    """Download campaign data as ZIP file"""
+def export_zip(campaign_id: str, current_user = Depends(get_current_user)):
+    """Download campaign data as ZIP file - only if campaign belongs to current user"""
     tracker = CampaignTracker.load(campaign_id)
     
     if not tracker:
         return {"error": "Campaign not found"}, 404
+    
+    # Verify ownership
+    if tracker.campaign_data.get("user_id") != current_user.user_id:
+        return {"error": "Access denied - campaign belongs to another user"}, 403
     
     # Create ZIP file in memory
     zip_buffer = io.BytesIO()
@@ -737,14 +766,105 @@ class GoogleAuthRequest(BaseModel):
     code: str
     redirect_uri: str
 
+class UserSignupRequest(BaseModel):
+    email: str
+    password: str
+    fullName: str
+
 class UserLoginRequest(BaseModel):
+    email: str
+    password: str
+
+class UserGoogleAuthRequest(BaseModel):
     email: str
     name: str
     google_id: str
     image_url: Optional[str] = None  # Google profile picture URL
 
+# ==================== EMAIL/PASSWORD AUTHENTICATION ====================
+
+@app.post("/api/auth/signup")
+def signup(request: UserSignupRequest):
+    """Register a new user with email and password"""
+    try:
+        email = request.email.strip().lower()
+        password = request.password.strip()
+        full_name = request.fullName.strip()
+        
+        # Validate inputs are not empty
+        if not email or not password or not full_name:
+            raise HTTPException(status_code=400, detail="All fields are required")
+        
+        if len(full_name) > 100:
+            raise HTTPException(status_code=400, detail="Name is too long")
+        
+        # Create user with validation
+        user, error = UserDatabase.create_user_with_email(email, full_name, password)
+        
+        if error:
+            # Return 400 for validation errors, don't expose specific details to prevent user enumeration
+            raise HTTPException(status_code=400, detail=error)
+        
+        # Create JWT token
+        jwt_token = AuthManager.create_token(user.user_id)
+        
+        return {
+            "token": jwt_token,
+            "user": user.to_dict(),
+            "expiresIn": 24 * 60 * 60
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Signup error: {e}")
+        raise HTTPException(status_code=500, detail="Signup failed")
+
+
+@app.post("/api/auth/login")
+def login(request: UserLoginRequest):
+    """Login with email and password"""
+    try:
+        email = request.email.strip().lower()
+        password = request.password.strip()
+        
+        if not email or not password:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Get user by email
+        user = UserDatabase.get_user_by_email(email)
+        
+        if not user or not user.password_hash:
+            # Don't reveal if user exists (prevent user enumeration)
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Verify password
+        if not user.verify_password(password):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Update last login
+        UserDatabase.update_last_login(user.user_id)
+        
+        # Create JWT token
+        jwt_token = AuthManager.create_token(user.user_id)
+        
+        return {
+            "token": jwt_token,
+            "user": user.to_dict(),
+            "expiresIn": 24 * 60 * 60
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+
+# ==================== GOOGLE AUTHENTICATION ====================
+
 @app.post("/api/auth/google-callback")
-def google_callback(request: UserLoginRequest):
+def google_callback(request: UserGoogleAuthRequest):
     """Handle user creation/login after Google OAuth with profile picture"""
     try:
         # Try MongoDB first if available
