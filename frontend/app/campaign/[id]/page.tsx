@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BsEyeglasses } from 'react-icons/bs';
 import { LuPencil, LuMicroscope, LuCog } from 'react-icons/lu';
@@ -383,12 +383,10 @@ function CampaignDetailContent({ id }: { id: string }) {
   );
 }
 
-export default function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
+export default function CampaignDetailPage({ params }: { params: { id: string } }) {
   return (
     <ToastProvider>
-      <CampaignDetailContent id={id} />
+      <CampaignDetailContent id={params.id} />
     </ToastProvider>
   );
 }
