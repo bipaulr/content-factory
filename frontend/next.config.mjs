@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 
 const nextConfig = {
   typescript: {
@@ -13,10 +9,13 @@ const nextConfig = {
     unoptimized: true,
   },
   webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': path.resolve(__dirname),
-    };
+    config.resolve.plugins = [
+      ...(config.resolve.plugins || []),
+      new TsconfigPathsPlugin({
+        configFile: './tsconfig.json',
+        extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      }),
+    ];
     return config;
   },
 }
