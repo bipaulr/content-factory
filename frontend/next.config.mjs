@@ -1,6 +1,6 @@
-/** @type {import('next').NextConfig} */
-import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
+import path from 'path';
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -9,15 +9,9 @@ const nextConfig = {
     unoptimized: true,
   },
   webpack: (config) => {
-    config.resolve.plugins = [
-      ...(config.resolve.plugins || []),
-      new TsconfigPathsPlugin({
-        configFile: './tsconfig.json',
-        extensions: ['.ts', '.tsx', '.js', '.jsx'],
-      }),
-    ];
+    config.resolve.alias['@'] = path.resolve('./');
     return config;
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
