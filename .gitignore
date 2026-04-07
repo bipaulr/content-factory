@@ -44,6 +44,10 @@ build/
 # Project specific
 campaigns/
 !vercel.json
+!package.json
+!frontend/package.json
+!package-lock.json
+!frontend/package-lock.json
 *.json
 .env
 .env.local
