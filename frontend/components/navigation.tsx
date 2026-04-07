@@ -112,7 +112,7 @@ export function Navigation() {
                   <Avatar 
                     name={user.name || ''} 
                     email={user.email || ''} 
-                    image={user.image || (user as any).image_url || undefined}
+                    image={((user as any).image || (user as any).image_url) || undefined}
                     size="md"
                   />
                 </button>
@@ -126,7 +126,7 @@ export function Navigation() {
                         <Avatar 
                           name={user.name || ''} 
                           email={user.email || ''} 
-                          image={user.image || (user as any).image_url || undefined}
+                          image={((user as any).image || (user as any).image_url) || undefined}
                           size="lg"
                         />
                         <div className="flex-1 min-w-0">

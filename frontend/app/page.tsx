@@ -9,7 +9,7 @@ import { GradientButton } from '@/components/gradient-button';
 import { MetricCard } from '@/components/metric-card';
 import { StatusBadge } from '@/components/status-badge';
 import { ToastProvider } from '@/components/toast-provider';
-import { getCampaigns, getAnalytics, type Campaign, type Analytics } from '../../lib/api';
+import { getCampaigns, getAnalytics, type Campaign, type Analytics } from '../lib/api';
 import { useRequireAuth } from '@/hooks/useAuth';
 import { useLocalAuth } from '@/providers/auth-provider';
 

@@ -22,28 +22,39 @@ export const authOptions: NextAuthOptions = {
         token.picture = profile.picture; // Google profile picture
 
         // Call backend to create/update user with profile picture
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google-callback`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                google_id: profile.sub,
-                email: profile.email,
-                name: profile.name,
-                image_url: profile.picture, // Pass Google profile picture
-              }),
-            }
-          );
+        // Only call backend if API URL is configured and we're not in build time
+        if (process.env.NEXT_PUBLIC_API_URL) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+            
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google-callback`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  google_id: profile.sub,
+                  email: profile.email,
+                  name: profile.name,
+                  image_url: profile.picture, // Pass Google profile picture
+                }),
+                signal: controller.signal,
+              }
+            );
 
-          if (response.ok) {
-            const data = await response.json();
-            token.backendToken = data.token;
-            token.userId = data.user.user_id;
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+              const data = await response.json();
+              token.backendToken = data.token;
+              token.userId = data.user.user_id;
+            }
+          } catch (error) {
+            // Log error but don't fail auth - user can still sign in
+            // Backend sync is non-critical for auth flow
+            console.error('Failed to sync with backend:', error);
           }
-        } catch (error) {
-          console.error('Failed to sync with backend:', error);
         }
       }
 
