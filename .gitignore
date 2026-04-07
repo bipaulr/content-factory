@@ -43,6 +43,9 @@ build/
 
 # Project specific
 campaigns/
+!vercel.json
 *.json
 .env
 .env.local
+DEPLOYMENT.md
+RAILWAY_SETUP.md
