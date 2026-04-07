@@ -30,7 +30,7 @@ app.add_middleware(
         "http://localhost:5174",
         "https://content-factory-chi.vercel.app",
         "https://content-factory-blue.vercel.app",
-        os.getenv("FRONTEND_URL", "")
+        *(([os.getenv("FRONTEND_URL")] if os.getenv("FRONTEND_URL") else []))
     ],
     allow_credentials=True,
     allow_methods=["*"],
