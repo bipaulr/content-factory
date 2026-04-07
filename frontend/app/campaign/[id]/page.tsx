@@ -19,7 +19,7 @@ import {
   exportZip,
   type Campaign,
   type FeedbackMessage,
-} from '@/lib/api';
+} from '../../../lib/api';
 
 function CampaignDetailContent({ id }: { id: string }) {
   const { showToast } = useToast();

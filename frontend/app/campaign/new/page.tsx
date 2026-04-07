@@ -9,7 +9,7 @@ import { GradientButton } from '@/components/gradient-button';
 import { AgentTimeline } from '@/components/agent-timeline';
 import { ProgressBar } from '@/components/progress-bar';
 import { ToastProvider, useToast } from '@/components/toast-provider';
-import { createCampaignAsync, createCampaignStream, uploadFileAndCreateCampaign, createCampaignFromUrl } from '@/lib/api';
+import { createCampaignAsync, createCampaignStream, uploadFileAndCreateCampaign, createCampaignFromUrl } from '../../../lib/api';
 import type { AgentMessage } from '@/lib/types';
 
 function NewCampaignContent() {

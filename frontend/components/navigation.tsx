@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { checkHealth } from '@/lib/api';
+import { checkHealth } from '../lib/api';
 import { cn } from '@/lib/utils';
 import { useSession, signOut } from 'next-auth/react';
 import { useLocalAuth } from '@/providers/auth-provider';

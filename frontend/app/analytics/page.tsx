@@ -8,7 +8,7 @@ import { GradientButton } from '@/components/gradient-button';
 import { MetricCard } from '@/components/metric-card';
 import { StatusBadge } from '@/components/status-badge';
 import { ToastProvider, useToast } from '@/components/toast-provider';
-import { getAnalytics, getCampaigns, type Analytics, type Campaign } from '@/lib/api';
+import { getAnalytics, getCampaigns, type Analytics, type Campaign } from '../../lib/api';
 import { useRequireAuth } from '@/hooks/useAuth';
 import { useLocalAuth } from '@/providers/auth-provider';
 

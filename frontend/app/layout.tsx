@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/providers/auth-provider'
+import { Inter } from 'next/font/google'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] });
+
 
 export const metadata: Metadata = {
   title: 'Content Factory - AI-Powered Content Creation',
@@ -37,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased bg-[#0a0a0a] text-white min-h-screen">
+      <body className={`${inter.className} font-sans antialiased bg-[#0a0a0a] text-white min-h-screen`}>
         <AuthProvider>
           {children}
         </AuthProvider>

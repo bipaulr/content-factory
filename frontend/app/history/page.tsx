@@ -7,7 +7,7 @@ import { Navigation } from '@/components/navigation';
 import { GradientButton } from '@/components/gradient-button';
 import { StatusBadge } from '@/components/status-badge';
 import { ToastProvider } from '@/components/toast-provider';
-import { getCampaigns, type Campaign } from '@/lib/api';
+import { getCampaigns, type Campaign } from '../../lib/api';
 import type { CampaignStatus } from '@/lib/types';
 import { useRequireAuth } from '@/hooks/useAuth';
 import { useLocalAuth } from '@/providers/auth-provider';
