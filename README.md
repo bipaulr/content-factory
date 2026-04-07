@@ -349,4 +349,5 @@ npm run build
 
 ## License
 
-This project is private and proprietary.
+This project is private and proprietary.#   V e r c e l   d e p l o y m e n t  
+ 
