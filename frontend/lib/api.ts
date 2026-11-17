@@ -227,7 +227,23 @@ export async function getAnalytics(): Promise<Analytics> {
   return response.data;
 }
 
-// SSE Stream helper
-export function createCampaignStream(campaignId: string): EventSource {
-  return new EventSource(`${API_BASE_URL}/api/pipeline/stream/${campaignId}`);
+// Resolve the backend JWT the same way the axios interceptor does
+async function getBackendToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const response = await fetch('/api/auth/session');
+    const session = await response.json();
+    if (session?.user?.backendToken) return session.user.backendToken;
+  } catch {
+    // fall through to localStorage
+  }
+  return localStorage.getItem('auth_token');
+}
+
+// SSE Stream helper. EventSource cannot send an Authorization header,
+// so the token goes in the query string.
+export async function createCampaignStream(campaignId: string): Promise<EventSource> {
+  const token = await getBackendToken();
+  const query = token ? `?token=${encodeURIComponent(token)}` : '';
+  return new EventSource(`${API_BASE_URL}/api/pipeline/stream/${campaignId}${query}`);
 }

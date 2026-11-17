@@ -68,7 +68,7 @@ function NewCampaignContent() {
       showToast('info', `Campaign ${response.campaign_id} started!`);
 
       // Start SSE stream
-      const eventSource = createCampaignStream(response.campaign_id);
+      const eventSource = await createCampaignStream(response.campaign_id);
       eventSourceRef.current = eventSource;
 
       eventSource.onmessage = (event) => {

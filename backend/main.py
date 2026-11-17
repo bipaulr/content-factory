@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Depends, Header
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Depends, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -38,19 +38,8 @@ app.add_middleware(
 )
 
 # Security
-def get_current_user(authorization: Optional[str] = Header(None)):
-    """Verify JWT token and return current user"""
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing authorization header")
-    
-    # Extract token from "Bearer <token>"
-    try:
-        scheme, token = authorization.split()
-        if scheme.lower() != "bearer":
-            raise HTTPException(status_code=401, detail="Invalid authorization scheme")
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid authorization header format")
-    
+def _user_from_token(token: str):
+    """Verify a JWT and return the matching user."""
     payload = AuthManager.verify_token(token)
     
     if not payload:
@@ -59,8 +48,37 @@ def get_current_user(authorization: Optional[str] = Header(None)):
     user = UserDatabase.get_user_by_id(payload.get("user_id"))
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-    
+
     return user
+
+
+def get_current_user(authorization: Optional[str] = Header(None)):
+    """Verify JWT token from the Authorization header and return current user"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing authorization header")
+
+    # Extract token from "Bearer <token>"
+    try:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=401, detail="Invalid authorization scheme")
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid authorization header format")
+
+    return _user_from_token(token)
+
+
+def get_current_user_sse(
+    authorization: Optional[str] = Header(None),
+    token: Optional[str] = Query(None),
+):
+    """Like get_current_user, but also accepts ?token= because the browser's
+    EventSource API cannot send an Authorization header."""
+    if authorization:
+        return get_current_user(authorization)
+    if token:
+        return _user_from_token(token)
+    raise HTTPException(status_code=401, detail="Missing authorization")
 
 class SourceInput(BaseModel):
     text: str
@@ -622,9 +640,15 @@ def generate_sse_message(event_type: str, data: dict):
 
 
 @app.get("/api/pipeline/stream/{campaign_id}")
-def stream_campaign_progress(campaign_id: str):
+def stream_campaign_progress(campaign_id: str, current_user = Depends(get_current_user_sse)):
     """Stream real-time pipeline progress as Server-Sent Events"""
-    
+
+    # Verify ownership before opening the stream. Return the same 404 for
+    # missing and foreign campaigns so IDs can't be probed.
+    owned = CampaignTracker.load(campaign_id)
+    if not owned or owned.campaign_data.get("user_id") != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
     def event_generator():
         """Generator function for SSE streaming"""
         # Check if campaign exists
@@ -689,11 +713,11 @@ def stream_campaign_progress(campaign_id: str):
 
 
 @app.get("/api/analytics")
-def get_analytics():
-    """Get analytics summary for all campaigns"""
+def get_analytics(current_user = Depends(get_current_user)):
+    """Get analytics summary for the current user's campaigns"""
     from datetime import datetime, timedelta
-    
-    campaigns = CampaignTracker.list_all()
+
+    campaigns = CampaignTracker.list_all(user_id=current_user.user_id)
     
     if not campaigns:
         return {
@@ -978,8 +1002,11 @@ def verify_token(current_user = Depends(get_current_user)):
 
 
 @app.get("/api/auth/user/{user_id}")
-def get_user(user_id: str):
-    """Get user data by ID (includes profile picture and other metadata)"""
+def get_user(user_id: str, current_user = Depends(get_current_user)):
+    """Get user data by ID (includes profile picture and other metadata).
+    Users may only fetch their own profile."""
+    if user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
     try:
         # Try MongoDB first if available
         try:
