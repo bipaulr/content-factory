@@ -54,3 +54,6 @@ campaigns/
 .env.local
 DEPLOYMENT.md
 RAILWAY_SETUP.md
+
+# Local secrets
+api keys for cf/
